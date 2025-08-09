@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-import { onramp } from "@/actions/onramp/action";
+import { onramp } from "@/actions/onramp";
 import { MoneyInput } from "@/components/ui/money-input";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";

@@ -1,14 +1,5 @@
 import { generateJwt as generateJwtCdp } from "@coinbase/cdp-sdk/auth";
-
-interface CdpRequest {
-  requestHost: string;
-  requestPath: string;
-  requestMethod: string;
-}
-
-interface SessionTokenResponse {
-  token: string;
-}
+import type { CdpRequest } from "./types";
 
 const generateJwt = async (payload: CdpRequest) =>
   generateJwtCdp({
@@ -42,27 +33,4 @@ export const cdpFetch = async <T>(
   }
 
   return (await response.json()) as T;
-};
-
-export const createSessionToken = async (
-  address: string,
-): Promise<SessionTokenResponse> => {
-  return cdpFetch<SessionTokenResponse>(
-    {
-      requestHost: "api.developer.coinbase.com",
-      requestPath: `/onramp/v1/token`,
-      requestMethod: "POST",
-    },
-    {
-      body: JSON.stringify({
-        addresses: [
-          {
-            address,
-            blockchains: ["base"],
-          },
-        ],
-        assets: ["USDC"],
-      }),
-    },
-  );
 };

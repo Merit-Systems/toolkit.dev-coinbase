@@ -4,10 +4,11 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/server/auth";
 
-import { createSessionToken } from "./lib";
-import { Experience, PaymentMethod } from "./types";
+import { createSessionToken } from "@/lib/cdp/session";
+import { Experience, PaymentMethod } from "@/lib/cdp/types";
 
 import { env } from "@/env";
+import { createServerOnlyCaller } from "@/server/api/root";
 
 interface OnrampParams {
   amount: number;
@@ -27,6 +28,13 @@ export async function onramp({ amount }: OnrampParams) {
   try {
     const { token } = await createSessionToken(user.id);
     sessionToken = token;
+
+    const serverCaller = await createServerOnlyCaller();
+    await serverCaller.onrampSessions.create({
+      sessionToken,
+      amount,
+      userId: user.id,
+    });
   } catch (error) {
     console.error("Failed to create CDP session token:", error);
     throw error;
