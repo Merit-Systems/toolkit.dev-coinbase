@@ -57,6 +57,7 @@ model User {
     videos        Video[]
     userFeatures  UserFeature[]
     workbenches   Workbench[]
+    onrampSessions OnrampSession[]
 }
 
 enum UserRole {
@@ -190,4 +191,23 @@ model Tool {
     toolkit     Toolkit  @relation(fields: [toolkitId], references: [id], onDelete: Cascade)
 
     @@id([id, toolkitId])
+}
+
+model OnrampSession {
+    id           String   @id
+    origin       String
+    amount       Int
+    status       SessionStatus   @default(pending)
+    userId       String
+    date         DateTime @default(now())
+    txHash       String?  @unique
+    failureReason String?
+
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum SessionStatus {
+  pending
+  succeeded
+  failed
 }

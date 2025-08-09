@@ -100,6 +100,8 @@ export const env = createEnv({
       .default("development"),
     PRISMA_LOG_QUERIES: z.string().optional(),
     GITHUB_TOKEN: z.string().optional(),
+    CDP_API_KEY_ID: z.string(),
+    CDP_API_KEY_SECRET: z.string(),
   },
 
   /**

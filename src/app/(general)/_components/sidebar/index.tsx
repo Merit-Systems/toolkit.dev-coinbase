@@ -85,13 +85,7 @@ export async function AppSidebar({
               </VStack>
             </Link>
           </SidebarMenuButton>
-          <NavUser
-            user={{
-              name: session.user.name ?? "User",
-              email: session.user.email ?? "",
-              avatar: session.user.image ?? "",
-            }}
-          />
+          <NavUser address={session.user.id} email={session.user.email ?? ""} />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
