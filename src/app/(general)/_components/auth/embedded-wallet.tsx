@@ -1,22 +1,37 @@
 "use client";
 
 import { useState } from "react";
+
+import { Check, Loader2, X } from "lucide-react";
+
 import { useMutation } from "@tanstack/react-query";
+
 import { useSignMessage } from "wagmi";
 import {
   useSignInWithEmail,
   useVerifyEmailOTP,
   useCurrentUser,
 } from "@coinbase/cdp-hooks";
+
+import { z } from "zod";
+
+import { toast } from "sonner";
+
+import { getCsrfToken } from "next-auth/react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, Loader2, X } from "lucide-react";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+
 import { signInWithEthereum } from "@/server/auth/providers/siwe/sign-in";
-import { getCsrfToken } from "next-auth/react";
-import { toast } from "sonner";
+
 import { cn } from "@/lib/utils";
-import { z } from "zod";
 
 export const EmbeddedWallet = () => {
   const [email, setEmail] = useState("");
@@ -50,30 +65,16 @@ export const EmbeddedWallet = () => {
 
   // Mutation for verifying OTP
   const {
-    mutate: verifyOTP,
+    mutateAsync: verifyOTP,
     isPending: isVerifyingOTP,
     error: verifyOTPError,
     isSuccess: verifyOTPSuccess,
     reset: resetVerifyOTP,
   } = useMutation({
     mutationFn: async ({ flowId, otp }: { flowId: string; otp: string }) => {
-      const result = await verifyEmailOTP({
+      return verifyEmailOTP({
         flowId,
         otp,
-      });
-      if (!result.user.evmAccounts?.[0]) {
-        toast.error("No EVM address found");
-        return;
-      }
-      await signInWithEthereum({
-        address: result.user.evmAccounts[0],
-        csrfToken: getCsrfToken,
-        chainId: 8453,
-        signMessage: async (message) => {
-          const signature = await signMessageAsync({ message });
-          return signature;
-        },
-        email: result.user.authenticationMethods.email?.email ?? "",
       });
     },
     onSuccess: () => {
@@ -96,7 +97,23 @@ export const EmbeddedWallet = () => {
       return;
     }
 
-    verifyOTP({ flowId, otp });
+    const result = await verifyOTP({ flowId, otp });
+
+    if (!result.user.evmAccounts?.[0]) {
+      toast.error("No EVM address found");
+      return;
+    }
+
+    await signInWithEthereum({
+      address: result.user.evmAccounts[0],
+      csrfToken: getCsrfToken,
+      chainId: 8453,
+      signMessage: async (message) => {
+        const signature = await signMessageAsync({ message });
+        return signature;
+      },
+      email: result.user.authenticationMethods.email?.email ?? "",
+    });
   };
 
   const handleReset = () => {
@@ -106,51 +123,56 @@ export const EmbeddedWallet = () => {
     resetVerifyOTP();
   };
 
-  if (currentUser) {
-    if (isVerifyingOTP) {
-      return <Loader2 className="mx-auto size-8 animate-spin" />;
-    } else if (verifyOTPSuccess) {
-      return <Check className="mx-auto size-8 text-green-500" />;
-    } else {
-      return (
-        <div className="mx-auto flex flex-col items-center gap-2">
-          <X className="mx-auto size-8 text-red-500" />
-          <p className="text-muted-foreground text-sm">
-            Something went wrong: {verifyOTPError?.message}
-          </p>
-        </div>
-      );
-    }
-  }
-
   if (flowId) {
     return (
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="otp">OTP Code</Label>
-          <Input
-            id="otp"
-            type="text"
-            placeholder="Enter 6-digit OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            disabled={isVerifyingOTP}
+          <InputOTP
             maxLength={6}
-          />
-          <p className="text-muted-foreground text-xs">
-            Check your email for the OTP code
-          </p>
+            value={otp}
+            onChange={setOtp}
+            containerClassName="w-full"
+          >
+            <InputOTPGroup {...otpGroupProps(verifyOTPSuccess)}>
+              <InputOTPSlot index={0} {...otpSlotProps(verifyOTPSuccess)} />
+              <InputOTPSlot index={1} {...otpSlotProps(verifyOTPSuccess)} />
+              <InputOTPSlot index={2} {...otpSlotProps(verifyOTPSuccess)} />
+            </InputOTPGroup>
+            <InputOTPSeparator
+              className={cn(verifyOTPSuccess && "text-green-600")}
+            />
+            <InputOTPGroup {...otpGroupProps(verifyOTPSuccess)}>
+              <InputOTPSlot index={3} {...otpSlotProps(verifyOTPSuccess)} />
+              <InputOTPSlot index={4} {...otpSlotProps(verifyOTPSuccess)} />
+              <InputOTPSlot index={5} {...otpSlotProps(verifyOTPSuccess)} />
+            </InputOTPGroup>
+          </InputOTP>
+          {verifyOTPError ? (
+            <p className="text-muted-foreground text-xs">
+              {verifyOTPError.message}
+            </p>
+          ) : (
+            <p className="text-muted-foreground text-xs">
+              Check your email for the OTP code
+            </p>
+          )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
           <Button
             onClick={handleVerifyOTP}
-            disabled={isVerifyingOTP}
-            className="flex-1"
+            disabled={isVerifyingOTP || verifyOTPSuccess || otp.length !== 6}
+            className="user-message h-12"
           >
             {isVerifyingOTP ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
                 Verifying...
+              </>
+            ) : verifyOTPSuccess ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Logging in...
               </>
             ) : (
               "Verify OTP"
@@ -158,7 +180,7 @@ export const EmbeddedWallet = () => {
           </Button>
           <Button
             onClick={handleReset}
-            variant="outline"
+            variant="ghost"
             disabled={isVerifyingOTP}
           >
             Back
@@ -204,4 +226,19 @@ export const EmbeddedWallet = () => {
       </Button>
     </div>
   );
+};
+
+const otpGroupProps = (isSuccess: boolean) => {
+  return {
+    className: cn(
+      "flex-1 rounded-md",
+      isSuccess && "shadow-[0_0_8px_var(--color-green-600)]",
+    ),
+  };
+};
+
+const otpSlotProps = (isSuccess: boolean) => {
+  return {
+    className: cn("h-12 flex-1 text-xl", isSuccess && "border-green-600"),
+  };
 };

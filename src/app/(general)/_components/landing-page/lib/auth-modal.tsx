@@ -18,7 +18,7 @@ export const AuthModal = ({ children }: AuthModalProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent showCloseButton={false} className="gap-6">
+      <DialogContent showCloseButton={false} className="gap-6 sm:max-w-sm">
         <DialogHeader className="items-center gap-2">
           <Logo className="size-16" />
           <VStack>

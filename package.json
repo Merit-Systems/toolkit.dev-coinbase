@@ -91,6 +91,7 @@
     "googleapis": "^150.0.1",
     "hast-util-to-jsx-runtime": "^2.3.6",
     "html-react-parser": "^5.2.6",
+    "input-otp": "^1.4.2",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.513.0",
     "lumaai": "^1.16.0",
