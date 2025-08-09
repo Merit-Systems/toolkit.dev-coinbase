@@ -11,12 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 
 import { onramp } from "@/actions/onramp";
 import { MoneyInput } from "@/components/ui/money-input";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 
 interface Props {
   open: boolean;
@@ -25,25 +25,21 @@ interface Props {
 
 export const OnrampDialog: React.FC<Props> = ({ open, setOpen }) => {
   const [amount, setAmount] = useState<number>();
-  const [isAddingFunds, setIsAddingFunds] = useState(false);
 
-  const handleAddFunds = async () => {
-    try {
+  const { mutate: addFunds, isPending: isAddingFunds } = useMutation({
+    mutationFn: () => {
       if (!amount) {
         throw new Error("Amount is required");
       }
 
-      setIsAddingFunds(true);
-
-      await onramp({ amount });
-    } catch (error) {
+      return onramp({ amount });
+    },
+    onError: (error) => {
       toast.error(
         `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
-    } finally {
-      setIsAddingFunds(false);
-    }
-  };
+    },
+  });
 
   const { data: session } = useSession();
 
@@ -65,7 +61,7 @@ export const OnrampDialog: React.FC<Props> = ({ open, setOpen }) => {
         <DialogFooter>
           <Button
             className="user-message w-full"
-            onClick={handleAddFunds}
+            onClick={() => addFunds()}
             disabled={!amount || isAddingFunds}
           >
             {isAddingFunds ? <Loader2 className="animate-spin" /> : "Add Funds"}

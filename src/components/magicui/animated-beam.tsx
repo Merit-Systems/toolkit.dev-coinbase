@@ -31,6 +31,7 @@ export interface AnimatedBeamProps {
   isVertical?: boolean;
   repeatDelay?: number;
   beamWidth?: number;
+  isFull?: boolean;
 }
 
 export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
@@ -55,6 +56,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   isVertical = false,
   repeatDelay = 0,
   beamWidth = 10,
+  isFull = false,
 }) => {
   const id = useId();
   const [pathD, setPathD] = useState("");
@@ -182,73 +184,128 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   ]);
 
   return (
-    <svg
-      fill="none"
-      width={svgDimensions.width}
-      height={svgDimensions.height}
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn(
-        "pointer-events-none absolute top-0 left-0 transform-gpu stroke-2",
-        className,
-      )}
-      viewBox={`0 0 ${svgDimensions.width} ${svgDimensions.height}`}
-    >
-      <motion.path
-        d={pathD}
-        stroke={pathColor}
-        strokeWidth={pathWidth}
-        strokeOpacity={pathOpacity}
-        strokeLinecap="round"
-        transition={{
-          repeat: Infinity,
-          repeatType: "loop",
-          duration: 2,
-          ease: "linear",
-        }}
-      />
-      <path
-        d={pathD}
-        strokeWidth={pathWidth}
-        stroke={`url(#${id})`}
-        strokeOpacity="1"
-        strokeLinecap="round"
-      />
-      <defs>
-        <motion.linearGradient
-          className="transform-gpu"
-          id={id}
-          gradientUnits={"userSpaceOnUse"}
-          initial={{
-            x1: "0%",
-            x2: "0%",
-            y1: "0%",
-            y2: "0%",
-          }}
-          animate={{
-            x1: gradientCoordinates.x1,
-            x2: gradientCoordinates.x2,
-            y1: gradientCoordinates.y1,
-            y2: gradientCoordinates.y2,
-          }}
+    <>
+      <style>
+        {`
+          @keyframes beam-glow-pulse {
+            0%, 100% { filter: opacity(0.7); }
+            50% { filter: opacity(1); }
+          }
+        `}
+      </style>
+      <svg
+        fill="none"
+        width={svgDimensions.width}
+        height={svgDimensions.height}
+        xmlns="http://www.w3.org/2000/svg"
+        className={cn(
+          "pointer-events-none absolute top-0 left-0 transform-gpu stroke-2",
+          className,
+        )}
+        viewBox={`0 0 ${svgDimensions.width} ${svgDimensions.height}`}
+      >
+        <motion.path
+          d={pathD}
+          stroke={pathColor}
+          strokeWidth={pathWidth}
+          strokeOpacity={pathOpacity}
+          strokeLinecap="round"
           transition={{
-            delay,
-            duration,
-            ease: [0.16, 1, 0.3, 1],
             repeat: Infinity,
-            repeatDelay,
+            repeatType: "loop",
+            duration: 2,
+            ease: "linear",
           }}
-        >
-          <stop stopColor={gradientStartColor} stopOpacity="0"></stop>
-          <stop stopColor={gradientStartColor}></stop>
-          <stop offset="32.5%" stopColor={gradientStopColor}></stop>
-          <stop
-            offset="100%"
-            stopColor={gradientStopColor}
-            stopOpacity="0"
-          ></stop>
-        </motion.linearGradient>
-      </defs>
-    </svg>
+        />
+        <path
+          d={pathD}
+          strokeWidth={pathWidth}
+          stroke={`url(#${id})`}
+          strokeOpacity="1"
+          strokeLinecap="round"
+        />
+        {isFull && (
+          <path
+            d={pathD}
+            stroke={gradientStopColor}
+            strokeWidth={pathWidth * 1.5}
+            strokeLinecap="round"
+            filter={`url(#${id}-glow)`}
+            style={{
+              animation: "beam-glow-pulse 1.5s ease-in-out infinite",
+              opacity: 0.7,
+            }}
+          />
+        )}
+        <defs>
+          {isFull && (
+            <filter
+              id={`${id}-glow`}
+              x="-50%"
+              y="-50%"
+              width="200%"
+              height="200%"
+            >
+              <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          )}
+          <motion.linearGradient
+            className="transform-gpu"
+            id={id}
+            gradientUnits={"userSpaceOnUse"}
+            initial={{
+              x1: "0%",
+              x2: "0%",
+              y1: "0%",
+              y2: "0%",
+            }}
+            animate={{
+              x1: gradientCoordinates.x1,
+              x2: gradientCoordinates.x2,
+              y1: gradientCoordinates.y1,
+              y2: gradientCoordinates.y2,
+            }}
+            transition={{
+              delay,
+              duration,
+              ease: [0.16, 1, 0.3, 1],
+              repeat: Infinity,
+              repeatDelay,
+            }}
+          >
+            {isFull ? (
+              <>
+                <stop
+                  offset="0%"
+                  stopColor={gradientStartColor}
+                  stopOpacity="1"
+                />
+                <stop
+                  offset="100%"
+                  stopColor={gradientStopColor}
+                  stopOpacity="1"
+                />
+              </>
+            ) : (
+              <>
+                <stop stopColor={gradientStartColor} stopOpacity="0"></stop>
+                <stop stopColor={gradientStartColor}></stop>
+                <stop offset="32.5%" stopColor={gradientStopColor}></stop>
+                <stop
+                  offset="100%"
+                  stopColor={gradientStopColor}
+                  stopOpacity="0"
+                ></stop>
+              </>
+            )}
+          </motion.linearGradient>
+        </defs>
+      </svg>
+    </>
   );
 };
 

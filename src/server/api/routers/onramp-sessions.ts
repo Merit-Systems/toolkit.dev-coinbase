@@ -36,7 +36,7 @@ export const onrampSessionsRouter = createTRPCRouter({
         return onrampSession;
       }
 
-      const { transactions } = await getOnrampTransactions(onrampSession.id);
+      const { transactions } = await getOnrampTransactions(ctx.session.user.id);
 
       const transaction = transactions[0];
 

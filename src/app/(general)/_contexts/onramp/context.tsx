@@ -1,7 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
-import { OnrampDialog } from "./dialog";
+import { createContext, useContext, useEffect, useState } from "react";
+
+import { useSearchParams } from "next/navigation";
+
+import { OnrampDialog } from "./onramp-dialog";
+import { OnrampSessionDialog } from "./session-dialog";
 
 interface OnrampContextType {
   open: () => void;
@@ -18,12 +22,30 @@ interface Props {
 }
 
 export const OnrampProvider: React.FC<Props> = ({ children }) => {
-  const [open, setOpen] = useState(false);
+  const [isOnrampDialogOpen, setIsOnrampDialogOpen] = useState(false);
+
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("onramp_token")) {
+      setSessionToken(searchParams.get("onramp_token") ?? null);
+      setIsSessionDialogOpen(true);
+    }
+  }, [searchParams]);
 
   return (
-    <OnrampContext.Provider value={{ open: () => setOpen(true) }}>
+    <OnrampContext.Provider value={{ open: () => setIsOnrampDialogOpen(true) }}>
       {children}
-      <OnrampDialog open={open} setOpen={setOpen} />
+      <OnrampDialog open={isOnrampDialogOpen} setOpen={setIsOnrampDialogOpen} />
+      <OnrampSessionDialog
+        sessionToken={sessionToken ?? ""}
+        isOpen={isSessionDialogOpen}
+        onOpenChange={setIsSessionDialogOpen}
+        setSessionToken={setSessionToken}
+      />
     </OnrampContext.Provider>
   );
 };
