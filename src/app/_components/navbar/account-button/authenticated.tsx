@@ -4,6 +4,7 @@ import { LogOut, User } from "lucide-react";
 import Link from "next/link";
 
 import { signOut } from "next-auth/react";
+import { useSignOut } from "@coinbase/cdp-hooks";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,12 @@ interface Props {
 }
 
 export const Authenticated: React.FC<Props> = ({ session }) => {
+  const { signOut: signOutWallet } = useSignOut();
+
+  const handleSignOut = async () => {
+    await signOutWallet();
+    await signOut();
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -49,7 +56,7 @@ export const Authenticated: React.FC<Props> = ({ session }) => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut />
           Sign Out
         </DropdownMenuItem>
