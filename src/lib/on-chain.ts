@@ -36,7 +36,37 @@ export const MERIT_ABI = [
   },
 ];
 
+export const ERC20_CONTRACT_ABI = [
+  {
+    name: "approve",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    name: "balanceOf",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "balance", type: "uint256" }],
+  },
+  {
+    name: "transfer",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "success", type: "bool" }],
+  },
+] as const;
+
 export const MERIT_CONTRACT_ADDRESS =
   env.MERIT_CONTRACT_ADDRESS as `0x${string}`;
 export const USDC_ADDRESS = env.USDC_ADDRESS as `0x${string}`;
-export const GITHUB_REPO_ID = env.GITHUB_REPO_ID as string;
+export const GITHUB_REPO_ID = env.GITHUB_REPO_ID;

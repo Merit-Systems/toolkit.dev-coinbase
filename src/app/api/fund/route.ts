@@ -1,6 +1,7 @@
 import {
   MERIT_ABI,
   MERIT_CONTRACT_ADDRESS,
+  ERC20_CONTRACT_ABI,
   USDC_ADDRESS,
   GITHUB_REPO_ID,
 } from "@/lib/on-chain";
@@ -41,6 +42,14 @@ export async function POST(request: Request) {
       smartAccount,
       network: "base-sepolia",
       calls: [
+        {
+          to: tokenAddress,
+          data: encodeFunctionData({
+            abi: ERC20_CONTRACT_ABI,
+            functionName: "approve",
+            args: [MERIT_CONTRACT_ADDRESS, amountBigInt],
+          }),
+        },
         {
           to: MERIT_CONTRACT_ADDRESS,
           value: 0n,
