@@ -64,6 +64,7 @@ export async function AppSidebar({
           <div className="group-data-[collapsible=icon]:hidden">
             <InstallPrompt />
           </div>
+
           <SidebarMenuButton
             asChild
             className="hover:bg-sidebar-accent/50 h-fit w-full rounded-lg p-2 transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2"
