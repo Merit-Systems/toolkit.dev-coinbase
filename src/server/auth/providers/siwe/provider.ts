@@ -19,7 +19,7 @@ const siweCredentialsSchema = z.object({
     }
   }),
   signedMessage: z.string(),
-  email: z.string().email(),
+  email: z.string().email().optional(),
 });
 
 function SiweProvider(options?: Partial<CredentialsConfig>) {
@@ -29,7 +29,7 @@ function SiweProvider(options?: Partial<CredentialsConfig>) {
     credentials: {
       message: { label: "Message", type: "text" },
       signedMessage: { label: "Signed Message", type: "text" },
-      email: { label: "Email", type: "text" },
+      email: { label: "Email", type: "text", optional: true },
     },
     async authorize(credentials) {
       const parseResult = siweCredentialsSchema.safeParse(credentials);

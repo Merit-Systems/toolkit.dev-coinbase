@@ -7,7 +7,7 @@ interface SignInWithEthereumOptions {
   csrfToken: () => Promise<string>;
   chainId: number;
   signMessage: (message: string) => Promise<string>;
-  email: string;
+  email?: string;
 }
 
 export async function signInWithEthereum({
