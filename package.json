@@ -38,6 +38,7 @@
     "@auth/prisma-adapter": "^2.7.2",
     "@coinbase/cdp-core": "^0.0.18",
     "@coinbase/cdp-hooks": "^0.0.18",
+    "@coinbase/cdp-sdk": "^1.34.0",
     "@coinbase/cdp-wagmi": "^0.0.18",
     "@discordjs/rest": "^2.5.1",
     "@e2b/code-interpreter": "^1.5.1",
