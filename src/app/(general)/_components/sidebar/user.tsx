@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
 import { signOut } from "next-auth/react";
+import { useSignOut } from "@coinbase/cdp-hooks";
 
 export function NavUser({
   user,
@@ -33,6 +34,13 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
+
+  const { signOut: signOutWallet } = useSignOut();
+
+  const handleSignOut = async () => {
+    await signOutWallet();
+    await signOut();
+  };
 
   return (
     <SidebarMenu>
@@ -98,7 +106,7 @@ export function NavUser({
               {theme === "light" ? "Light mode" : "Dark mode"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem onClick={handleSignOut}>
               <LogOut />
               Sign Out
             </DropdownMenuItem>

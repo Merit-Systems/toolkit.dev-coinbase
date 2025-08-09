@@ -6,10 +6,9 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { AuthButtons } from "../../auth/auth-buttons";
-import { providers } from "@/server/auth/providers";
 import { Logo } from "@/components/ui/logo";
 import { VStack } from "@/components/ui/stack";
+import { EmbeddedWallet } from "../../auth/embedded-wallet";
 
 interface AuthModalProps {
   children: React.ReactNode;
@@ -19,7 +18,7 @@ export const AuthModal = ({ children }: AuthModalProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent showCloseButton={false} className="gap-6">
+      <DialogContent showCloseButton={false} className="gap-6 sm:max-w-sm">
         <DialogHeader className="items-center gap-2">
           <Logo className="size-16" />
           <VStack>
@@ -31,12 +30,7 @@ export const AuthModal = ({ children }: AuthModalProps) => {
             </DialogDescription>
           </VStack>
         </DialogHeader>
-        <AuthButtons
-          providers={providers.map((provider) => ({
-            name: provider.name,
-            id: provider.id,
-          }))}
-        />
+        <EmbeddedWallet />
       </DialogContent>
     </Dialog>
   );
