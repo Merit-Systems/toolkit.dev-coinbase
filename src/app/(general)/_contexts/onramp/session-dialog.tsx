@@ -25,23 +25,23 @@ import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/trpc/react";
 import { Loading } from "@/components/ui/loading";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
-// the props to the on and off ramp modal
-export interface Props {
-  sessionToken: string;
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  setSessionToken: (sessionToken: string) => void;
-}
+export const OnrampSessionDialog: React.FC = () => {
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
-export const OnrampSessionDialog: React.FC<Props> = ({
-  sessionToken,
-  isOpen,
-  onOpenChange,
-  setSessionToken,
-}) => {
   const queryClient = useQueryClient();
   const { queryKey: balanceQueryKey } = useBalance();
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("onramp_token")) {
+      setSessionToken(searchParams.get("onramp_token") ?? null);
+      setIsSessionDialogOpen(true);
+    }
+  }, [searchParams]);
 
   const [isCompleted, setIsCompleted] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -53,7 +53,7 @@ export const OnrampSessionDialog: React.FC<Props> = ({
     refetch: refetchSession,
   } = api.onrampSessions.get.useQuery(
     {
-      id: sessionToken,
+      id: sessionToken ?? "",
     },
     {
       enabled: !!sessionToken && !isError,
@@ -79,14 +79,14 @@ export const OnrampSessionDialog: React.FC<Props> = ({
   }, [session, queryClient, balanceQueryKey]);
 
   const handleOnOpenChange = (open: boolean) => {
-    onOpenChange(open);
+    setIsSessionDialogOpen(open);
     if (session?.status === "succeeded" || session?.status === "failed") {
       setSessionToken("");
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOnOpenChange}>
+    <Dialog open={isSessionDialogOpen} onOpenChange={handleOnOpenChange}>
       {sessionToken && (
         <DialogTrigger asChild>
           <Button className="fixed top-4 right-4">
