@@ -37,6 +37,9 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
     owner,
   });
 
+  console.log("Parent account address:", owner.address);
+  console.log("Smart account address:", smartAccount.address);
+
   // Send user operation to fund the repo
   const result = await cdp.evm.sendUserOperation({
     smartAccount,
