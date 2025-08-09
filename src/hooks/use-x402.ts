@@ -1,13 +1,13 @@
 "use client";
 
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, useSignMessage } from "wagmi";
 import { wrapFetchWithPayment } from "x402-fetch";
 
 export function useX402() {
   const { address, isConnected } = useAccount();
-  const { data: walletClient } = useWalletClient();
+  const { signMessageAsync } = useSignMessage();
 
-  if (!isConnected || !address || !walletClient) {
+  if (!isConnected || !address) {
     return {
       fetchWithPayment: null,
       isReady: false,
@@ -15,12 +15,11 @@ export function useX402() {
     };
   }
 
-  // Create account object for x402 - minimal interface
+  // Create account object for x402
   const account = {
     address,
     signMessage: async ({ message }: { message: string | Uint8Array }) => {
-      return await walletClient.signMessage({
-        account: address,
+      return await signMessageAsync({
         message: typeof message === "string" ? message : { raw: message },
       });
     },
