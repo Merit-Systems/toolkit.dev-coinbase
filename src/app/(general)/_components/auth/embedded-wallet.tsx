@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Check, Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { useMutation } from "@tanstack/react-query";
 
-import { useSignMessage } from "wagmi";
+import { useAccount, useSignMessage } from "wagmi";
 import {
   useSignInWithEmail,
   useVerifyEmailOTP,
@@ -39,6 +39,7 @@ export const EmbeddedWallet = () => {
 
   const { signInWithEmail } = useSignInWithEmail();
   const { verifyEmailOTP } = useVerifyEmailOTP();
+  const account = useAccount();
   const { currentUser } = useCurrentUser();
   const { signMessageAsync } = useSignMessage();
 
@@ -97,24 +98,23 @@ export const EmbeddedWallet = () => {
       return;
     }
 
-    const result = await verifyOTP({ flowId, otp });
-
-    if (!result.user.evmAccounts?.[0]) {
-      toast.error("No EVM address found");
-      return;
-    }
-
-    await signInWithEthereum({
-      address: result.user.evmAccounts[0],
-      csrfToken: getCsrfToken,
-      chainId: 8453,
-      signMessage: async (message) => {
-        const signature = await signMessageAsync({ message });
-        return signature;
-      },
-      email: result.user.authenticationMethods.email?.email ?? "",
-    });
+    await verifyOTP({ flowId, otp });
   };
+
+  useEffect(() => {
+    if (account.address && currentUser) {
+      void signInWithEthereum({
+        address: account.address,
+        csrfToken: getCsrfToken,
+        chainId: 8453,
+        signMessage: async (message) => {
+          const signature = await signMessageAsync({ message });
+          return signature;
+        },
+        email: currentUser?.authenticationMethods.email?.email ?? "",
+      });
+    }
+  }, [account.address, currentUser, signMessageAsync]);
 
   const handleReset = () => {
     setEmail("");

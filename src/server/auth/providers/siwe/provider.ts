@@ -57,6 +57,7 @@ function SiweProvider(options?: Partial<CredentialsConfig>) {
 
       return db.user.create({
         data: {
+          id: siwe.address,
           email: parseResult.data.email,
           name: siwe.address,
         },
