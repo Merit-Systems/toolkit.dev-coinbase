@@ -310,8 +310,8 @@ const MessageToolPayButton = <
 
   return (
     <Button
-      size="sm"
-      className="ml-auto size-fit p-1 text-xs"
+      size={isPending || isSuccess ? "icon" : "sm"}
+      className={"ml-auto size-fit p-1 text-xs"}
       onClick={() => executeTool()}
       disabled={isPending}
     >
