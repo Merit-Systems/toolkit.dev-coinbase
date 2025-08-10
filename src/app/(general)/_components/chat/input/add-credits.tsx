@@ -10,13 +10,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MoneyInput } from "@/components/ui/money-input";
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { BrainCircuit, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export const AddCreditsButton = () => {
+interface Props {
+  needsCredits: boolean;
+}
+
+export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
   const [amount, setAmount] = useState<number>();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -56,9 +60,14 @@ export const AddCreditsButton = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button
+          variant={needsCredits ? "default" : "outline"}
+          className={cn("rounded-xl", needsCredits ? "user-message" : "")}
+        >
           <BrainCircuit className="h-4 w-4" />
-          {isLoading ? (
+          {needsCredits ? (
+            "Add Credits"
+          ) : isLoading ? (
             <Loader2Icon className="h-4 w-4 animate-spin" />
           ) : (
             `${formatCurrency(echoBalance ?? 0)} Credits`

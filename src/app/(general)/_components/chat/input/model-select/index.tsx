@@ -210,7 +210,11 @@ const ModelSelectContent: React.FC<{
   </Command>
 );
 
-export const ModelSelect: React.FC = () => {
+interface Props {
+  disabled: boolean;
+}
+
+export const ModelSelect: React.FC<Props> = ({ disabled }) => {
   const { selectedChatModel, setSelectedChatModel } = useChatContext();
   const isMobile = useIsMobile();
 
@@ -241,7 +245,7 @@ export const ModelSelect: React.FC = () => {
     <Button
       variant="outline"
       className={cn(
-        "justify-center bg-transparent md:w-auto md:justify-start",
+        "justify-center rounded-xl bg-transparent md:w-auto md:justify-start",
         // Use wider button on mobile when both icons are present
         hasNativeSearch && selectedChatModel ? "h-9 w-16" : "size-9",
       )}
@@ -254,6 +258,7 @@ export const ModelSelect: React.FC = () => {
           setIsOpen(!isOpen);
         }
       }}
+      disabled={disabled}
     >
       {selectedChatModel ? (
         <>
