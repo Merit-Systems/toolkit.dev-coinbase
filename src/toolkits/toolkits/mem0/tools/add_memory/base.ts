@@ -11,4 +11,5 @@ export const baseAddMemoryTool = createBaseTool({
     success: z.boolean(),
     content: z.string(),
   }),
+  price: 0.05,
 });

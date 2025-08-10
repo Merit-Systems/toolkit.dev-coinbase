@@ -21,6 +21,7 @@ const config = {
   },
   experimental: {
     authInterrupts: true,
+    nodeMiddleware: true,
   },
 };
 

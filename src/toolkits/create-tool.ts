@@ -14,12 +14,14 @@ export const createBaseTool = <
   description,
   inputSchema,
   outputSchema,
+  price,
 }: {
   description: string;
   inputSchema: ZodObject<Args>;
   outputSchema: ZodObject<Output>;
+  price?: number;
 }): BaseTool<Args, Output> => {
-  return { description, inputSchema, outputSchema };
+  return { description, inputSchema, outputSchema, price };
 };
 
 export const createServerTool = <

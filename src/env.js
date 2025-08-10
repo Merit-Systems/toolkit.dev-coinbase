@@ -105,6 +105,7 @@ export const env = createEnv({
     USDC_ADDRESS: z.string(),
     CDP_API_KEY_ID: z.string(),
     CDP_API_KEY_SECRET: z.string(),
+    CDP_WALLET_SECRET: z.string(),
   },
 
   /**

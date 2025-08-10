@@ -9,6 +9,9 @@ import { AnimatePresence, motion } from "motion/react";
 import React from "react";
 import type z from "zod";
 import { useChatContext } from "@/app/(general)/_contexts/chat-context";
+import { Button } from "@/components/ui/button";
+import type { ClientToolkit } from "@/toolkits/types";
+import { useX402Fetch } from "@/app/(general)/_hooks/use-x402-fetch";
 
 interface Props {
   toolInvocation: ToolInvocation;
@@ -76,7 +79,7 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
       transition={{ duration: 0.4, ease: "easeInOut" }}
       layout={!argsDefined ? true : undefined}
     >
-      <Card className="gap-0 overflow-hidden p-0">
+      <Card className="w-fit max-w-full gap-0 overflow-hidden p-0">
         <HStack className="border-b p-2">
           <clientToolkit.icon className="size-4" />
           {toolInvocation.state === "result" ? (
@@ -90,19 +93,27 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
           )}
           <AnimatePresence>
             {(toolInvocation.state === "call" ||
-              toolInvocation.state === "partial-call") && (
-              <motion.div
-                initial={{
-                  opacity: argsDefined ? 1 : 0,
-                  scale: argsDefined ? 1 : 0.8,
-                }}
-                animate={{ opacity: 1, scale: argsDefined ? 1 : 1 }}
-                // exit={{ opacity: 0, scale: argsDefined ? 1 : 0.8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Loader2 className="size-4 animate-spin opacity-60" />
-              </motion.div>
-            )}
+              toolInvocation.state === "partial-call") &&
+              (toolConfig.price ? (
+                <MessageToolPayButton
+                  toolkit={typedServer}
+                  tool={typedTool}
+                  toolConfig={toolConfig}
+                  toolInvocation={toolInvocation}
+                />
+              ) : (
+                <motion.div
+                  initial={{
+                    opacity: argsDefined ? 1 : 0,
+                    scale: argsDefined ? 1 : 0.8,
+                  }}
+                  animate={{ opacity: 1, scale: argsDefined ? 1 : 1 }}
+                  // exit={{ opacity: 0, scale: argsDefined ? 1 : 0.8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Loader2 className="size-4 animate-spin opacity-60" />
+                </motion.div>
+              ))}
           </AnimatePresence>
         </HStack>
         <motion.div
@@ -252,4 +263,63 @@ const MessageToolResultComponent: React.FC<{
   const { append } = useChatContext();
 
   return <Component append={append} />;
+};
+
+interface PayButtonProps<
+  T extends Toolkits,
+  Tool extends ServerToolkitNames[T],
+> {
+  toolkit: T;
+  tool: Tool;
+  toolConfig: ClientToolkit["tools"][Tool];
+  toolInvocation: ToolInvocation;
+}
+
+const MessageToolPayButton = <
+  T extends Toolkits,
+  Tool extends ServerToolkitNames[T],
+>({
+  toolkit,
+  tool,
+  toolConfig,
+  toolInvocation,
+}: PayButtonProps<T, Tool>) => {
+  const { addToolResult } = useChatContext();
+
+  const { mutate: executeTool, isPending } = useX402Fetch(
+    `/api/tool/${toolkit}/${tool}`,
+    { method: "POST", body: JSON.stringify(toolInvocation.args) },
+    {
+      onSuccess: (data) => {
+        addToolResult({
+          toolCallId: toolInvocation.toolCallId,
+          result: { result: data },
+        });
+      },
+      onError: (error) => {
+        addToolResult({
+          toolCallId: toolInvocation.toolCallId,
+          result: {
+            isError: true,
+            result: { error: error.message },
+          },
+        });
+      },
+    },
+  );
+
+  return (
+    <Button
+      size="sm"
+      className="size-fit p-1 text-xs"
+      onClick={() => executeTool()}
+      disabled={isPending}
+    >
+      {isPending ? (
+        <Loader2 className="size-4 animate-spin opacity-60" />
+      ) : (
+        `$${toolConfig.price}`
+      )}
+    </Button>
+  );
 };

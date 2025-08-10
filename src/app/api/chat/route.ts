@@ -64,7 +64,13 @@ export async function POST(request: Request) {
   let requestBody: PostRequestBody;
 
   try {
-    requestBody = postRequestBodySchema.parse(await request.json());
+    const body = (await request.json()) as PostRequestBody;
+
+    console.log({
+      parts: body.message.parts,
+    });
+
+    requestBody = postRequestBodySchema.parse(body);
   } catch (error) {
     console.error(error);
     return new ChatSDKError("bad_request:api").toResponse();
@@ -87,12 +93,6 @@ export async function POST(request: Request) {
     if (!session?.user) {
       return new ChatSDKError("unauthorized:chat").toResponse();
     }
-
-    // const messageCount = await api.messages.getMessageCountByUserId();
-
-    // if (messageCount > 100) {
-    //   return new ChatSDKError("rate_limit:chat").toResponse();
-    // }
 
     const chat = await api.chats.getChat(id);
 
@@ -137,19 +137,26 @@ export async function POST(request: Request) {
       message,
     });
 
-    await api.messages.createMessage({
-      chatId: id,
-      id: message.id,
-      role: "user",
-      parts: message.parts,
-      attachments:
-        message.experimental_attachments?.map((attachment) => ({
-          url: attachment.url,
-          name: attachment.name,
-          contentType: attachment.contentType,
-        })) ?? [],
-      modelId: "user",
-    });
+    if (message.role === "assistant") {
+      await api.messages.updateMessage({
+        id: message.id,
+        parts: message.parts,
+      });
+    } else {
+      await api.messages.createMessage({
+        chatId: id,
+        id: message.id,
+        role: "user",
+        parts: message.parts,
+        attachments:
+          message.experimental_attachments?.map((attachment) => ({
+            url: attachment.url,
+            name: attachment.name,
+            contentType: attachment.contentType,
+          })) ?? [],
+        modelId: "user",
+      });
+    }
 
     const streamId = generateUUID();
     await api.streams.createStreamId({ streamId, chatId: id });
@@ -161,51 +168,61 @@ export async function POST(request: Request) {
         return Object.keys(tools).reduce(
           (acc, toolName) => {
             const serverTool = tools[toolName as keyof typeof tools];
-            acc[`${id}_${toolName}`] = tool({
+
+            const toolConfig = {
               description: serverTool.description,
               parameters: serverTool.inputSchema,
-              execute: async (args) => {
-                try {
-                  const result = await serverTool.callback(args);
+            };
 
-                  // Increment tool usage on successful execution
+            if (!serverTool.price) {
+              acc[`${id}_${toolName}`] = tool({
+                ...toolConfig,
+                execute: async (args) => {
                   try {
-                    const serverCaller = await createServerOnlyCaller();
-                    await serverCaller.tools.incrementToolUsageServer({
-                      toolkit: id,
-                      tool: toolName,
-                    });
-                  } catch (error) {
-                    console.error("Failed to increment tool usage:", error);
-                  }
+                    const result = await serverTool.callback(args);
 
-                  if (serverTool.message) {
+                    // Increment tool usage on successful execution
+                    try {
+                      const serverCaller = await createServerOnlyCaller();
+                      await serverCaller.tools.incrementToolUsageServer({
+                        toolkit: id,
+                        tool: toolName,
+                      });
+                    } catch (error) {
+                      console.error("Failed to increment tool usage:", error);
+                    }
+
+                    if (serverTool.message) {
+                      return {
+                        result,
+                        message:
+                          typeof serverTool.message === "function"
+                            ? serverTool.message(result)
+                            : serverTool.message,
+                      };
+                    } else {
+                      return {
+                        result,
+                      };
+                    }
+                  } catch (error) {
+                    console.error(error);
                     return {
-                      result,
-                      message:
-                        typeof serverTool.message === "function"
-                          ? serverTool.message(result)
-                          : serverTool.message,
-                    };
-                  } else {
-                    return {
-                      result,
+                      isError: true,
+                      result: {
+                        error:
+                          error instanceof Error
+                            ? error.message
+                            : "An error occurred while executing the tool",
+                      },
                     };
                   }
-                } catch (error) {
-                  console.error(error);
-                  return {
-                    isError: true,
-                    result: {
-                      error:
-                        error instanceof Error
-                          ? error.message
-                          : "An error occurred while executing the tool",
-                    },
-                  };
-                }
-              },
-            });
+                },
+              });
+            } else {
+              acc[`${id}_${toolName}`] = tool(toolConfig);
+            }
+
             return acc;
           },
           {} as Record<string, Tool>,

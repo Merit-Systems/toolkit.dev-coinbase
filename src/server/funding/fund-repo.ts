@@ -7,6 +7,7 @@ import {
   GITHUB_REPO_ID,
   ERC20_CONTRACT_ABI,
 } from "./on-chain";
+import { env } from "@/env";
 
 export interface FundRepoResult {
   success: boolean;
@@ -25,7 +26,11 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
     const amountBigInt = BigInt(amount * 10 ** 6);
 
     // CDP wallets
-    const cdp = new CdpClient();
+    const cdp = new CdpClient({
+      apiKeyId: env.CDP_API_KEY_ID,
+      apiKeySecret: env.CDP_API_KEY_SECRET,
+      walletSecret: env.CDP_WALLET_SECRET,
+    });
 
     const owner = await cdp.evm.getOrCreateAccount({
       name: "toolkit-fund-owner",
