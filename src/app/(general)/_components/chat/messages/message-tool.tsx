@@ -4,7 +4,7 @@ import { HStack } from "@/components/ui/stack";
 import { getClientToolkit } from "@/toolkits/toolkits/client";
 import type { Toolkits, ServerToolkitNames } from "@/toolkits/toolkits/shared";
 import type { CreateMessage, DeepPartial, ToolInvocation } from "ai";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import React from "react";
 import type z from "zod";
@@ -79,7 +79,7 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
       transition={{ duration: 0.4, ease: "easeInOut" }}
       layout={!argsDefined ? true : undefined}
     >
-      <Card className="w-fit max-w-full gap-0 overflow-hidden p-0">
+      <Card className="max-w-xl gap-0 overflow-hidden p-0">
         <HStack className="border-b p-2">
           <clientToolkit.icon className="size-4" />
           {toolInvocation.state === "result" ? (
@@ -205,10 +205,6 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
                   height: completeOnFirstMount ? "auto" : 0,
                 }}
                 animate={{ opacity: 1, height: "auto" }}
-                // exit={{
-                //   opacity: 0,
-                //   height: completeOnFirstMount ? "auto" : 0,
-                // }}
                 transition={{
                   duration: 0.3,
                   ease: "easeOut",
@@ -286,7 +282,11 @@ const MessageToolPayButton = <
 }: PayButtonProps<T, Tool>) => {
   const { addToolResult } = useChatContext();
 
-  const { mutate: executeTool, isPending } = useX402Fetch(
+  const {
+    mutate: executeTool,
+    isPending,
+    isSuccess,
+  } = useX402Fetch(
     `/api/tool/${toolkit}/${tool}`,
     { method: "POST", body: JSON.stringify(toolInvocation.args) },
     {
@@ -311,14 +311,16 @@ const MessageToolPayButton = <
   return (
     <Button
       size="sm"
-      className="size-fit p-1 text-xs"
+      className="ml-auto size-fit p-1 text-xs"
       onClick={() => executeTool()}
       disabled={isPending}
     >
-      {isPending ? (
+      {isSuccess ? (
+        <Check className="size-4" />
+      ) : isPending ? (
         <Loader2 className="size-4 animate-spin opacity-60" />
       ) : (
-        `$${toolConfig.price}`
+        `Run for $${toolConfig.price}`
       )}
     </Button>
   );

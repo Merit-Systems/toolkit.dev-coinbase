@@ -133,6 +133,8 @@ export async function POST(request: Request) {
 
     const existingMessage = previousMessages.find((m) => m.id === message.id);
 
+    console.log(message.parts);
+
     if (existingMessage) {
       void api.messages.updateMessage({
         id: message.id,
@@ -142,7 +144,9 @@ export async function POST(request: Request) {
       void api.messages.createMessage({
         chatId: id,
         id: message.id,
-        role: "user",
+        role: message.parts.some((part) => part.type === "tool-invocation")
+          ? "assistant"
+          : "user",
         parts: message.parts,
         attachments:
           message.experimental_attachments?.map((attachment) => ({
@@ -283,13 +287,10 @@ export async function POST(request: Request) {
                 }
               }
 
-              // Send error to frontend - this will trigger onStreamError which calls stop()
               dataStream.writeData({
                 type: "error",
                 message: "An error occurred while processing your request",
               });
-
-              // Don't throw - just let the stream end naturally after sending error data
             },
             onFinish: async ({ response }) => {
               // Get the actual model used from OpenRouter's response
@@ -326,9 +327,9 @@ export async function POST(request: Request) {
                     throw new Error("No assistant message found!");
                   }
 
-                  const existingMessage = messages.find(
-                    (m) => m.id === message.id,
-                  );
+                  const existingMessage = messages
+                    .filter((m) => m.role === "assistant")
+                    .find((m) => m.id === message.id);
 
                   if (existingMessage) {
                     await api.messages.updateMessage({
