@@ -8,6 +8,7 @@ import {
   Wrench,
   Server,
   Paintbrush,
+  BrainCircuit,
 } from "lucide-react";
 
 import { HStack, VStack } from "@/components/ui/stack";
@@ -42,15 +43,15 @@ export const Graphic = () => {
           handleRef={source1}
         />
         <SourceNode
-          Icon={Trophy}
-          label="Hackathon Prize"
+          Icon={BrainCircuit}
+          label="LLM Revenue"
           amount={2000}
           comingSoon={false}
           handleRef={source2}
         />
         <SourceNode
-          Icon={CircleDollarSign}
-          label="Revenue"
+          Icon={Wrench}
+          label="Tool Revenue"
           amount={1000}
           comingSoon={true}
           handleRef={source3}
