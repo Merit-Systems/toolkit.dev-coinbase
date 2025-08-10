@@ -45,8 +45,6 @@ const PurePreviewMessage: React.FC<Props> = ({
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
-  console.log(message);
-
   return (
     <AnimatePresence>
       <motion.div
