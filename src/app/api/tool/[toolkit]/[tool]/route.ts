@@ -50,6 +50,8 @@ export const POST = async (
 
   const result = await serverTool.callback(args);
 
+  console.log(clientToolkit.tools[typedTool]);
+
   if (clientToolkit.tools[typedTool].price) {
     void fundRepo(clientToolkit.tools[typedTool].price);
   }
