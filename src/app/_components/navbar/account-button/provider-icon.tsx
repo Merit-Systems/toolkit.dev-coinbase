@@ -40,6 +40,15 @@ export const AuthProviderIcon: React.FC<Props> = ({ provider, className }) => {
       Notion: SiNotion,
       Spotify: SiSpotify,
       Strava: SiStrava,
+      Echo: ({ className }: { className?: string }) => (
+        <Image
+          src="/icons/echo.png"
+          alt="Echo"
+          className={className}
+          width={16}
+          height={16}
+        />
+      ),
     }[provider] ?? null;
 
   return Icon ? <Icon className={cn("size-4", className)} /> : null;

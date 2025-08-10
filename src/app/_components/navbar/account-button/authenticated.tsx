@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, DollarSign } from "lucide-react";
 import Link from "next/link";
 
 import { signOut } from "next-auth/react";
@@ -53,6 +53,12 @@ export const Authenticated: React.FC<Props> = ({ session }) => {
           <Link href="/account">
             <User />
             Account
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/echo">
+            <DollarSign />
+            Echo Payments
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

@@ -6,6 +6,7 @@ import { encode as defaultEncode } from "next-auth/jwt";
 import { providers } from "./providers";
 
 import { db } from "@/server/db";
+import { getAccountByUserId, updateTokensByUserId } from "@/lib/db/queries";
 
 import type { DefaultSession, NextAuthConfig } from "next-auth";
 import type { UserRole } from "@prisma/client";
@@ -24,6 +25,11 @@ declare module "next-auth" {
       role: UserRole;
     } & DefaultSession["user"];
   }
+
+  interface User {
+    id?: string;
+    email?: string | null;
+  }
 }
 
 /**
@@ -40,14 +46,25 @@ export const authConfig = {
   },
   trustHost: true,
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
-    async signIn({ account }) {
+    signIn: async ({ user, account }) => {
+      if (!user.id || !account) {
+        return false;
+      }
+      
+      // Handle Echo provider specifically
+      if (account.provider === "echo") {
+        const existingAccount = await getAccountByUserId({ userId: user.id });
+        if (existingAccount) {
+                  await updateTokensByUserId(user.id, {
+          access_token: account.access_token ?? '',
+          expires_at: account.expires_at ?? 0,
+          refresh_token: account.refresh_token ?? '',
+        });
+        }
+        return true;
+      }
+      
+      // Handle other providers
       if (account) {
         const existingAccount = await db.account.findUnique({
           where: {
@@ -80,6 +97,55 @@ export const authConfig = {
         });
       }
       return true;
+    },
+    session: async ({ session, user }) => {
+      if (!user.id) {
+        return session;
+      }
+      
+      // Handle Echo token refresh
+      const account = await getAccountByUserId({ userId: user.id });
+      if (account?.expires_at && account.expires_at * 1000 < Date.now()) {
+        // If the access token has expired, try to refresh it
+        try {
+          const response = await fetch(
+            'https://echo.merit.systems/api/oauth/token',
+            {
+              method: 'POST',
+                          body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              refresh_token: account.refresh_token ?? '',
+            }),
+            },
+          );
+
+          const tokensOrError = await response.json() as unknown;
+
+          if (!response.ok) throw tokensOrError;
+
+          const newTokens = tokensOrError as {
+            access_token: string;
+            expires_in: number;
+            refresh_token: string;
+          };
+
+          await updateTokensByUserId(user.id, {
+            access_token: newTokens.access_token,
+            expires_at: Math.floor(Date.now() / 1000 + newTokens.expires_in),
+            refresh_token: newTokens.refresh_token,
+          });
+        } catch (error) {
+          console.error('Error refreshing access_token', error);
+        }
+      }
+      
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        },
+      };
     },
     async jwt({ token, account }) {
       if (

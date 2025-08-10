@@ -23,6 +23,7 @@ import type {
 import { IS_DEVELOPMENT } from "@/lib/constants";
 import { db } from "../../db";
 import SiweProvider from "./siwe/provider";
+import EchoProvider, { type EchoProfile } from "./echo";
 
 export const providers: (
   | OAuthConfig<DiscordProfile>
@@ -32,6 +33,7 @@ export const providers: (
   | OAuthConfig<NotionProfile>
   | OAuthConfig<StravaProfile>
   | OAuthConfig<SpotifyProfile>
+  | OAuthConfig<EchoProfile>
   | CredentialsConfig<Record<string, CredentialInput>>
 )[] = [
   ...("AUTH_GOOGLE_ID" in env && "AUTH_GOOGLE_SECRET" in env
@@ -119,6 +121,14 @@ export const providers: (
           redirectProxyUrl: IS_DEVELOPMENT
             ? `http://127.0.0.1:3000/api/auth`
             : undefined,
+        }),
+      ]
+    : []),
+  ...("ECHO_APP_ID" in env
+    ? [
+        EchoProvider({
+          clientId: env.ECHO_APP_ID,
+          allowDangerousEmailAccountLinking: true,
         }),
       ]
     : []),
