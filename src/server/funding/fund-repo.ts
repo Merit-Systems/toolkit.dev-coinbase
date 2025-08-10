@@ -21,6 +21,8 @@ export interface FundRepoResult {
 export async function fundRepo(amount: number): Promise<FundRepoResult> {
   console.log("funding repo", amount);
   try {
+    if (amount === 0) throw new Error("Amount is 0");
+
     const repoId = GITHUB_REPO_ID;
     const tokenAddress = USDC_ADDRESS;
     const repoInstanceId = 0;
@@ -32,15 +34,20 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
       apiKeySecret: env.CDP_API_KEY_SECRET,
       walletSecret: env.CDP_WALLET_SECRET,
     });
+    console.log("cdp", cdp);
 
     const owner = await cdp.evm.getOrCreateAccount({
       name: "toolkit-fund-owner",
     });
 
+    console.log("owner", owner);
+
     const smartAccount = await cdp.evm.getOrCreateSmartAccount({
       name: "toolkit-fund-smart-account",
       owner,
     });
+
+    console.log("smartAccount", smartAccount);
 
     // Send user operation to fund the repo
     const result = await cdp.evm.sendUserOperation({
@@ -73,6 +80,8 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
         },
       ],
     });
+
+    console.log("result", result);
 
     // Wait for the user operation to be processed
     await cdp.evm.waitForUserOperation({

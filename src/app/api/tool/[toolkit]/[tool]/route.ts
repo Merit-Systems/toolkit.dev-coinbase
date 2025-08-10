@@ -21,6 +21,10 @@ export const POST = async (
     return new Response("Toolkit not found", { status: 404 });
   }
 
+  const typedTool = tool as ServerToolkitNames[typeof toolkit];
+
+  const fundRepoPromise = fundRepo(clientToolkit.tools[typedTool].price ?? 0);
+
   const serverPreferences = await serverCookieUtils.getPreferences();
 
   const params = serverPreferences.toolkits?.find(
@@ -35,8 +39,6 @@ export const POST = async (
     );
   }
 
-  const typedTool = tool as ServerToolkitNames[typeof toolkit];
-
   const args = clientToolkit.tools[typedTool].inputSchema.parse(
     await req.json(),
   );
@@ -50,11 +52,7 @@ export const POST = async (
 
   const result = await serverTool.callback(args);
 
-  console.log(clientToolkit.tools[typedTool]);
-
-  if (clientToolkit.tools[typedTool].price) {
-    void fundRepo(clientToolkit.tools[typedTool].price);
-  }
+  await fundRepoPromise;
 
   return NextResponse.json(result, { status: 200 });
 };
