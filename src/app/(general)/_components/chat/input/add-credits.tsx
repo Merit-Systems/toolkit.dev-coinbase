@@ -16,6 +16,7 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { useMutation } from "@tanstack/react-query";
 import { BrainCircuit, Check, Loader2Icon } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -35,7 +36,7 @@ export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
 
   const { data: balance, isLoading: isBalanceLoading } = useBalance();
 
-  const { data: echoAccount } =
+  const { data: echoAccount, isLoading: isEchoAccountLoading } =
     api.accounts.getAccountByProvider.useQuery("echo");
 
   const {
@@ -73,6 +74,10 @@ export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
     },
   });
 
+  const shouldConnectEcho = useMemo(() => {
+    return !echoAccount;
+  }, [echoAccount]);
+
   const shouldOnramp = useMemo(() => {
     return balance !== undefined && balance < 1;
   }, [balance]);
@@ -85,7 +90,7 @@ export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
           disabled={isLoading || isBalanceLoading}
         >
           <BrainCircuit className="h-4 w-4" />
-          {isLoading || isBalanceLoading ? (
+          {isLoading || isBalanceLoading || isEchoAccountLoading ? (
             <Loader2Icon className="h-4 w-4 animate-spin" />
           ) : needsCredits ? (
             "Add Credits"
@@ -96,56 +101,76 @@ export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add {shouldOnramp ? "Funds" : "Credits"}</DialogTitle>
+          <DialogTitle>
+            {shouldConnectEcho
+              ? "Connect to Echo"
+              : `Add ${shouldOnramp ? "Funds" : "Credits"}`}
+          </DialogTitle>
           <DialogDescription>
-            {shouldOnramp
-              ? "Add funds to your account to use the LLM."
-              : "Add credits to use for LLM access."}
+            {shouldConnectEcho
+              ? "Echo is your global account for LLM access."
+              : shouldOnramp
+                ? "Add funds to your account to use the LLM."
+                : "Add credits to use for LLM access."}
           </DialogDescription>
         </DialogHeader>
-        <MoneyInput setAmount={setAmount} placeholder="0.00" />
-        <DialogFooter>
+        {shouldConnectEcho ? (
           <Button
-            disabled={
-              isAddCreditsPending ||
-              !amount ||
-              isSuccess ||
-              isOnrampPending ||
-              isOnrampSuccess
-            }
+            className="user-message"
+            size="lg"
             onClick={() => {
-              if (!amount) {
-                return;
-              }
-
-              if (shouldOnramp) {
-                void onrampMutate({
-                  amount,
-                });
-                return;
-              } else {
-                addCredits();
-              }
+              void signIn("echo");
             }}
-            className="w-full"
           >
-            {shouldOnramp ? (
-              isOnrampPending ? (
-                <Loader2Icon className="h-4 w-4 animate-spin" />
-              ) : isOnrampSuccess ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                "Checkout"
-              )
-            ) : isAddCreditsPending ? (
-              <Loader2Icon className="h-4 w-4 animate-spin" />
-            ) : isSuccess ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              "Add Credits"
-            )}
+            Connect to Echo
           </Button>
-        </DialogFooter>
+        ) : (
+          <>
+            <MoneyInput setAmount={setAmount} placeholder="0.00" />
+            <DialogFooter>
+              <Button
+                disabled={
+                  isAddCreditsPending ||
+                  !amount ||
+                  isSuccess ||
+                  isOnrampPending ||
+                  isOnrampSuccess
+                }
+                onClick={() => {
+                  if (!amount) {
+                    return;
+                  }
+
+                  if (shouldOnramp) {
+                    void onrampMutate({
+                      amount,
+                    });
+                    return;
+                  } else {
+                    addCredits();
+                  }
+                }}
+                className="w-full"
+              >
+                {shouldOnramp ? (
+                  isOnrampPending ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  ) : isOnrampSuccess ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    "Checkout"
+                  )
+                ) : isAddCreditsPending ? (
+                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                ) : isSuccess ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  "Add Credits"
+                )}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
