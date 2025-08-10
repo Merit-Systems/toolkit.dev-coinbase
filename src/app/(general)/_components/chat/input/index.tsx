@@ -39,6 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AddCreditsButton } from "./add-credits";
 
 interface Props {
   chatId: string;
@@ -462,6 +463,7 @@ const PureMultimodalInput: React.FC<Props> = ({
             />
             <ModelSelect />
             <ToolsSelect />
+            <AddCreditsButton />
           </div>
 
           <div className="flex items-center">

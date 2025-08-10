@@ -73,4 +73,26 @@ export const accountsRouter = createTRPCRouter({
         },
       });
     }),
+
+  getEchoBalance: protectedProcedure.query(async ({ ctx }) => {
+    const echoAccount = await ctx.db.account.findFirst({
+      where: {
+        userId: ctx.session.user.id,
+        provider: "echo",
+      },
+    });
+
+    if (!echoAccount) return 0;
+
+    const { balance } = await fetch(
+      `https://staging-echo.merit.systems/api/v1/balance`,
+      {
+        headers: {
+          Authorization: `Bearer ${echoAccount.access_token}`,
+        },
+      },
+    ).then((res) => res.json() as Promise<{ balance: number }>);
+
+    return balance;
+  }),
 });
