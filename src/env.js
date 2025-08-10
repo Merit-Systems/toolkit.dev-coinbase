@@ -103,6 +103,8 @@ export const env = createEnv({
     MERIT_CONTRACT_ADDRESS: z.string(),
     GITHUB_REPO_ID: z.string(),
     USDC_ADDRESS: z.string(),
+    CDP_API_KEY_ID: z.string(),
+    CDP_API_KEY_SECRET: z.string(),
   },
 
   /**

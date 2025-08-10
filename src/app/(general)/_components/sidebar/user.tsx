@@ -1,6 +1,14 @@
 "use client";
 
-import { ChevronRight, LogOut, Moon, Sun, User } from "lucide-react";
+import {
+  ChevronRight,
+  DollarSign,
+  LogOut,
+  Moon,
+  Sun,
+  User,
+  Wallet,
+} from "lucide-react";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,18 +30,22 @@ import {
 import { useTheme } from "next-themes";
 import { signOut } from "next-auth/react";
 import { useSignOut } from "@coinbase/cdp-hooks";
+import { formatCurrency, truncateAddress } from "@/lib/utils";
+import { useBalance } from "../../_hooks/use-balance";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useOnramp } from "../../_contexts/onramp/context";
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) {
+interface Props {
+  address: string;
+  email: string;
+}
+
+export const NavUser: React.FC<Props> = ({ address, email }) => {
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
+  const { open } = useOnramp();
+
+  const { data: balance, isLoading: isBalanceLoading } = useBalance(address);
 
   const { signOut: signOutWallet } = useSignOut();
 
@@ -52,14 +64,22 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage />
                 <AvatarFallback className="rounded-lg">
-                  {user.name.charAt(0)}
+                  <Wallet />
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                {isBalanceLoading ? (
+                  <Skeleton className="h-[17.5px] w-24" />
+                ) : (
+                  <span className="truncate font-medium">
+                    {formatCurrency(balance ?? 0)}
+                  </span>
+                )}
+                <span className="truncate text-xs">
+                  {truncateAddress(address)}
+                </span>
               </div>
               <ChevronRight className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -73,15 +93,30 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    <Wallet />
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">
+                    {truncateAddress(address)}
+                  </span>
+                  <span className="truncate text-xs">{email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  open();
+                }}
+              >
+                <DollarSign />
+                Add Funds
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
@@ -115,4 +150,4 @@ export function NavUser({
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+};
