@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import type { Address } from "viem";
 
 export const MERIT_ABI = [
   {
@@ -66,7 +67,6 @@ export const ERC20_CONTRACT_ABI = [
   },
 ] as const;
 
-export const MERIT_CONTRACT_ADDRESS =
-  env.MERIT_CONTRACT_ADDRESS as `0x${string}`;
-export const USDC_ADDRESS = env.USDC_ADDRESS as `0x${string}`;
+export const MERIT_CONTRACT_ADDRESS = env.MERIT_CONTRACT_ADDRESS as Address;
+export const USDC_ADDRESS = env.USDC_ADDRESS as Address;
 export const GITHUB_REPO_ID = env.GITHUB_REPO_ID;
