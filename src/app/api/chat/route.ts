@@ -133,8 +133,6 @@ export async function POST(request: Request) {
 
     const existingMessage = previousMessages.find((m) => m.id === message.id);
 
-    console.log(message.parts);
-
     if (existingMessage) {
       void api.messages.updateMessage({
         id: message.id,
