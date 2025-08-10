@@ -1,3 +1,5 @@
+import { onramp } from "@/actions/onramp";
+import { useBalance } from "@/app/(general)/_hooks/use-balance";
 import { useX402Fetch } from "@/app/(general)/_hooks/use-x402-fetch";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +14,9 @@ import {
 import { MoneyInput } from "@/components/ui/money-input";
 import { cn, formatCurrency } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { BrainCircuit, Loader2Icon } from "lucide-react";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { BrainCircuit, Check, Loader2Icon } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface Props {
@@ -30,12 +33,14 @@ export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
     refetch,
   } = api.accounts.getEchoBalance.useQuery();
 
+  const { data: balance, isLoading: isBalanceLoading } = useBalance();
+
   const { data: echoAccount } =
     api.accounts.getAccountByProvider.useQuery("echo");
 
   const {
     mutate: addCredits,
-    isPending,
+    isPending: isAddCreditsPending,
     isSuccess,
   } = useX402Fetch(
     `https://staging-echo.merit.systems/api/v1/base/payment-link?amount=${amount}`,
@@ -57,18 +62,33 @@ export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
     },
   );
 
+  const {
+    mutate: onrampMutate,
+    isPending: isOnrampPending,
+    isSuccess: isOnrampSuccess,
+  } = useMutation({
+    mutationFn: onramp,
+    onError: () => {
+      toast.error("Failed to build checkout link");
+    },
+  });
+
+  const shouldOnramp = useMemo(() => {
+    return balance !== undefined && balance < 1;
+  }, [balance]);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          variant={needsCredits ? "default" : "outline"}
-          className={cn("rounded-xl", needsCredits ? "user-message" : "")}
+          className={cn("user-message rounded-xl")}
+          disabled={isLoading || isBalanceLoading}
         >
           <BrainCircuit className="h-4 w-4" />
-          {needsCredits ? (
-            "Add Credits"
-          ) : isLoading ? (
+          {isLoading || isBalanceLoading ? (
             <Loader2Icon className="h-4 w-4 animate-spin" />
+          ) : needsCredits ? (
+            "Add Credits"
           ) : (
             `${formatCurrency(echoBalance ?? 0)} Credits`
           )}
@@ -76,23 +96,54 @@ export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Credits</DialogTitle>
+          <DialogTitle>Add {shouldOnramp ? "Funds" : "Credits"}</DialogTitle>
           <DialogDescription>
-            Add credits to use for LLM access.
+            {shouldOnramp
+              ? "Add funds to your account to use the LLM."
+              : "Add credits to use for LLM access."}
           </DialogDescription>
         </DialogHeader>
         <MoneyInput setAmount={setAmount} placeholder="0.00" />
         <DialogFooter>
           <Button
-            disabled={isPending || !amount || isSuccess}
-            onClick={() => addCredits()}
+            disabled={
+              isAddCreditsPending ||
+              !amount ||
+              isSuccess ||
+              isOnrampPending ||
+              isOnrampSuccess
+            }
+            onClick={() => {
+              if (!amount) {
+                return;
+              }
+
+              if (shouldOnramp) {
+                void onrampMutate({
+                  amount,
+                });
+                return;
+              } else {
+                addCredits();
+              }
+            }}
             className="w-full"
           >
-            {isPending
-              ? "Adding..."
-              : isSuccess
-                ? "Credits Added"
-                : "Add Credits"}
+            {shouldOnramp ? (
+              isOnrampPending ? (
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+              ) : isOnrampSuccess ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                "Checkout"
+              )
+            ) : isAddCreditsPending ? (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            ) : isSuccess ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              "Add Credits"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
