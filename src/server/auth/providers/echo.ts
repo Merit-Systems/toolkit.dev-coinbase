@@ -15,14 +15,14 @@ export default function EchoProvider<P extends EchoProfile>(
     name: "Echo",
     type: "oauth",
     authorization: {
-      url: "https://echo.merit.systems/api/oauth/authorize",
+      url: "https://staging-echo.merit.systems/api/oauth/authorize",
       params: {
         scope: "llm:invoke offline_access",
       },
     },
-    token: `https://echo.merit.systems/api/oauth/token?client_id=${options.clientId}`,
+    token: `https://staging-echo.merit.systems/api/oauth/token?client_id=${options.clientId}`,
     userinfo: {
-      url: "https://echo.merit.systems/api/oauth/userinfo",
+      url: "https://staging-echo.merit.systems/api/oauth/userinfo",
     },
     profile(profile) {
       return {

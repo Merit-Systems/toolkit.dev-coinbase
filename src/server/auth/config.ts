@@ -109,7 +109,7 @@ export const authConfig = {
         // If the access token has expired, try to refresh it
         try {
           const response = await fetch(
-            'https://echo.merit.systems/api/oauth/token',
+            'https://staging-echo.merit.systems/api/oauth/token',
             {
               method: 'POST',
                           body: new URLSearchParams({
