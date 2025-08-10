@@ -55,12 +55,6 @@ export const Authenticated: React.FC<Props> = ({ session }) => {
             Account
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/echo">
-            <DollarSign />
-            Echo Payments
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut />
