@@ -164,47 +164,47 @@ export async function POST(request: Request) {
             acc[`${id}_${toolName}`] = tool({
               description: serverTool.description,
               parameters: serverTool.inputSchema,
-              execute: async (args) => {
-                try {
-                  const result = await serverTool.callback(args);
+              // execute: async (args) => {
+              //   try {
+              //     const result = await serverTool.callback(args);
 
-                  // Increment tool usage on successful execution
-                  try {
-                    const serverCaller = await createServerOnlyCaller();
-                    await serverCaller.tools.incrementToolUsageServer({
-                      toolkit: id,
-                      tool: toolName,
-                    });
-                  } catch (error) {
-                    console.error("Failed to increment tool usage:", error);
-                  }
+              //     // Increment tool usage on successful execution
+              //     try {
+              //       const serverCaller = await createServerOnlyCaller();
+              //       await serverCaller.tools.incrementToolUsageServer({
+              //         toolkit: id,
+              //         tool: toolName,
+              //       });
+              //     } catch (error) {
+              //       console.error("Failed to increment tool usage:", error);
+              //     }
 
-                  if (serverTool.message) {
-                    return {
-                      result,
-                      message:
-                        typeof serverTool.message === "function"
-                          ? serverTool.message(result)
-                          : serverTool.message,
-                    };
-                  } else {
-                    return {
-                      result,
-                    };
-                  }
-                } catch (error) {
-                  console.error(error);
-                  return {
-                    isError: true,
-                    result: {
-                      error:
-                        error instanceof Error
-                          ? error.message
-                          : "An error occurred while executing the tool",
-                    },
-                  };
-                }
-              },
+              //     if (serverTool.message) {
+              //       return {
+              //         result,
+              //         message:
+              //           typeof serverTool.message === "function"
+              //             ? serverTool.message(result)
+              //             : serverTool.message,
+              //       };
+              //     } else {
+              //       return {
+              //         result,
+              //       };
+              //     }
+              //   } catch (error) {
+              //     console.error(error);
+              //     return {
+              //       isError: true,
+              //       result: {
+              //         error:
+              //           error instanceof Error
+              //             ? error.message
+              //             : "An error occurred while executing the tool",
+              //       },
+              //     };
+              //   }
+              // },
             });
             return acc;
           },

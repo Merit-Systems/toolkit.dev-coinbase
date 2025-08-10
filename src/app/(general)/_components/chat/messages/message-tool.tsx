@@ -30,6 +30,8 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
   const argsDefined = toolInvocation.args !== undefined;
   const completeOnFirstMount = toolInvocation.state === "result";
 
+  console.log(toolInvocation);
+
   const { toolName } = toolInvocation;
 
   const [server, tool] = toolName.split("_");
