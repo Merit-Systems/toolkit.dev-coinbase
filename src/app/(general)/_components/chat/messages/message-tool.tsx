@@ -10,16 +10,8 @@ import React from "react";
 import type z from "zod";
 import { useChatContext } from "@/app/(general)/_contexts/chat-context";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
 import type { ClientToolkit } from "@/toolkits/types";
-import {
-  useAccount,
-  useConnections,
-  useConnectors,
-  useWalletClient,
-} from "wagmi";
-import { decodeXPaymentResponse, wrapFetchWithPayment } from "x402-fetch";
-import { useEvmAddress } from "@coinbase/cdp-hooks";
+import { useX402Fetch } from "@/app/(general)/_hooks/use-x402-fetch";
 
 interface Props {
   toolInvocation: ToolInvocation;
@@ -294,55 +286,27 @@ const MessageToolPayButton = <
 }: PayButtonProps<T, Tool>) => {
   const { addToolResult } = useChatContext();
 
-  const { data: walletClient } = useWalletClient({
-    chainId: 8453,
-  });
-
-  const fetchWithPayment = wrapFetchWithPayment(
-    fetch,
-    walletClient as unknown as Parameters<typeof wrapFetchWithPayment>[1],
-  );
-
-  const { mutate: executeTool, isPending } = useMutation({
-    mutationFn: async () => {
-      const result = await fetchWithPayment(`/api/tool/${toolkit}/${tool}`, {
-        method: "POST",
-        body: JSON.stringify(toolInvocation.args),
-      }).then(async (response) => {
-        console.log(response);
-        const body = (await response.json()) as z.infer<
-          typeof toolConfig.outputSchema
-        >;
-        const paymentResponse = decodeXPaymentResponse(
-          response.headers.get("x-payment-response")!,
-        );
-        console.log(paymentResponse);
-        return body;
-      });
-
-      return result;
-    },
-    onSuccess: (data) => {
-      addToolResult({
-        toolCallId: toolInvocation.toolCallId,
-        result: {
-          result: data,
-        },
-      });
-    },
-    onError: (error) => {
-      addToolResult({
-        toolCallId: toolInvocation.toolCallId,
-        result: {
-          isError: true,
+  const { mutate: executeTool, isPending } = useX402Fetch(
+    `/api/tool/${toolkit}/${tool}`,
+    { method: "POST", body: JSON.stringify(toolInvocation.args) },
+    {
+      onSuccess: (data) => {
+        addToolResult({
+          toolCallId: toolInvocation.toolCallId,
+          result: { result: data },
+        });
+      },
+      onError: (error) => {
+        addToolResult({
+          toolCallId: toolInvocation.toolCallId,
           result: {
-            error:
-              error.message ?? "An error occurred while executing the tool",
+            isError: true,
+            result: { error: error.message },
           },
-        },
-      });
+        });
+      },
     },
-  });
+  );
 
   return (
     <Button
