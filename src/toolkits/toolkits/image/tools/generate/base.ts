@@ -13,6 +13,7 @@ export const baseGenerateTool = createBaseTool({
   description: "Generate an image",
   inputSchema,
   outputSchema,
+  price: 0.2,
 });
 
 export type GenerateToolArgs = z.infer<typeof inputSchema>;

@@ -64,13 +64,7 @@ export async function POST(request: Request) {
   let requestBody: PostRequestBody;
 
   try {
-    const body = (await request.json()) as PostRequestBody;
-
-    console.log({
-      parts: body.message.parts,
-    });
-
-    requestBody = postRequestBodySchema.parse(body);
+    requestBody = postRequestBodySchema.parse(await request.json());
   } catch (error) {
     console.error(error);
     return new ChatSDKError("bad_request:api").toResponse();
@@ -137,13 +131,15 @@ export async function POST(request: Request) {
       message,
     });
 
-    if (message.role === "assistant") {
-      await api.messages.updateMessage({
+    const existingMessage = previousMessages.find((m) => m.id === message.id);
+
+    if (existingMessage) {
+      void api.messages.updateMessage({
         id: message.id,
         parts: message.parts,
       });
     } else {
-      await api.messages.createMessage({
+      void api.messages.createMessage({
         chatId: id,
         id: message.id,
         role: "user",
@@ -321,6 +317,27 @@ export async function POST(request: Request) {
               // Send modelId as message annotation
               if (session.user?.id) {
                 try {
+                  const assistantMessage = appendResponseMessages({
+                    messages: [message],
+                    responseMessages: response.messages,
+                  }).pop();
+
+                  if (!assistantMessage) {
+                    throw new Error("No assistant message found!");
+                  }
+
+                  const existingMessage = messages.find(
+                    (m) => m.id === message.id,
+                  );
+
+                  if (existingMessage) {
+                    await api.messages.updateMessage({
+                      id: existingMessage.id,
+                      parts: assistantMessage.parts ?? [],
+                    });
+                    return;
+                  }
+
                   const assistantId = getTrailingMessageId({
                     messages: response.messages.filter(
                       (message) => message.role === "assistant",
@@ -328,15 +345,6 @@ export async function POST(request: Request) {
                   });
 
                   if (!assistantId) {
-                    throw new Error("No assistant message found!");
-                  }
-
-                  const [, assistantMessage] = appendResponseMessages({
-                    messages: [message],
-                    responseMessages: response.messages,
-                  });
-
-                  if (!assistantMessage) {
                     throw new Error("No assistant message found!");
                   }
 

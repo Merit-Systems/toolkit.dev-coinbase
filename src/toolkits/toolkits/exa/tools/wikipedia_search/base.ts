@@ -20,4 +20,5 @@ export const baseWikipediaSearchTool = createBaseTool({
       }),
     ),
   }),
+  price: 0.05,
 });

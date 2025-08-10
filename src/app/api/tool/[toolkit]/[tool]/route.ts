@@ -5,7 +5,6 @@ import { getClientToolkit } from "@/toolkits/toolkits/client";
 import { getServerToolkit } from "@/toolkits/toolkits/server";
 import type { ServerToolkitNames, Toolkits } from "@/toolkits/toolkits/shared";
 import { NextResponse, type NextRequest } from "next/server";
-import { z } from "zod";
 
 export const POST = async (
   req: NextRequest,

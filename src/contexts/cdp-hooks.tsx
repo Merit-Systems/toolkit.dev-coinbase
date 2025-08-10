@@ -3,7 +3,7 @@
 import { CDPHooksProvider as CDPHooksProviderBase } from "@coinbase/cdp-hooks";
 import { createCDPEmbeddedWalletConnector } from "@coinbase/cdp-wagmi";
 import { createConfig, WagmiProvider } from "wagmi";
-import { base, baseSepolia } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { http } from "wagmi";
 
 import { env } from "@/env";

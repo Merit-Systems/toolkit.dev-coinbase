@@ -20,4 +20,5 @@ export const baseCompetitorFinderTool = createBaseTool({
       }),
     ),
   }),
+  price: 0.05,
 });

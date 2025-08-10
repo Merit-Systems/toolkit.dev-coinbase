@@ -40,7 +40,7 @@ export const MoneyInput: React.FC<Props> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const autoNumericRef = useRef<AutoNumeric | null>(null);
 
-  const { data: balance, isLoading: isBalanceLoading } = useBalance(address);
+  const { data: balance, isLoading: isBalanceLoading } = useBalance();
 
   useEffect(() => {
     if (inputRef.current) {

@@ -20,4 +20,5 @@ export const baseResearchPaperSearchTool = createBaseTool({
       }),
     ),
   }),
+  price: 0.05,
 });

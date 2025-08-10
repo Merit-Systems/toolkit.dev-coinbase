@@ -33,7 +33,7 @@ import { IS_DEVELOPMENT } from "@/lib/constants";
 import type { ReactNode } from "react";
 import type { Attachment, UIMessage } from "ai";
 import type { UseChatHelpers } from "@ai-sdk/react";
-import type { ClientToolkit, ServerToolConfig } from "@/toolkits/types";
+import type { ClientToolkit } from "@/toolkits/types";
 import type { z } from "zod";
 import type { SelectedToolkit } from "@/components/toolkit/types";
 import type { Toolkits } from "@/toolkits/toolkits/shared";

@@ -21,4 +21,5 @@ export const baseSearchMemoriesTool = createBaseTool({
     ),
     query: z.string(),
   }),
+  price: 0.01,
 });
