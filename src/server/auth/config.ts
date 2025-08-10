@@ -50,20 +50,20 @@ export const authConfig = {
       if (!user.id || !account) {
         return false;
       }
-      
+
       // Handle Echo provider specifically
       if (account.provider === "echo") {
         const existingAccount = await getAccountByUserId({ userId: user.id });
         if (existingAccount) {
-                  await updateTokensByUserId(user.id, {
-          access_token: account.access_token ?? '',
-          expires_at: account.expires_at ?? 0,
-          refresh_token: account.refresh_token ?? '',
-        });
+          await updateTokensByUserId(user.id, {
+            access_token: account.access_token ?? "",
+            expires_at: account.expires_at ?? 0,
+            refresh_token: account.refresh_token ?? "",
+          });
         }
         return true;
       }
-      
+
       // Handle other providers
       if (account) {
         const existingAccount = await db.account.findUnique({
@@ -102,24 +102,24 @@ export const authConfig = {
       if (!user.id) {
         return session;
       }
-      
+
       // Handle Echo token refresh
       const account = await getAccountByUserId({ userId: user.id });
       if (account?.expires_at && account.expires_at * 1000 < Date.now()) {
         // If the access token has expired, try to refresh it
         try {
           const response = await fetch(
-            'https://staging-echo.merit.systems/api/oauth/token',
+            "https://staging-echo.merit.systems/api/oauth/token",
             {
-              method: 'POST',
-                          body: new URLSearchParams({
-              grant_type: 'refresh_token',
-              refresh_token: account.refresh_token ?? '',
-            }),
+              method: "POST",
+              body: new URLSearchParams({
+                grant_type: "refresh_token",
+                refresh_token: account.refresh_token ?? "",
+              }),
             },
           );
 
-          const tokensOrError = await response.json() as unknown;
+          const tokensOrError = (await response.json()) as unknown;
 
           if (!response.ok) throw tokensOrError;
 
@@ -135,10 +135,10 @@ export const authConfig = {
             refresh_token: newTokens.refresh_token,
           });
         } catch (error) {
-          console.error('Error refreshing access_token', error);
+          console.error("Error refreshing access_token", error);
         }
       }
-      
+
       return {
         ...session,
         user: {

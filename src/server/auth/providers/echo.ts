@@ -8,7 +8,7 @@ export interface EchoProfile {
 }
 
 export default function EchoProvider<P extends EchoProfile>(
-  options: OAuthUserConfig<P>
+  options: OAuthUserConfig<P>,
 ): OAuthConfig<P> {
   return {
     id: "echo",
@@ -28,8 +28,8 @@ export default function EchoProvider<P extends EchoProfile>(
       return {
         id: profile.sub,
         name: profile.name,
-        email: profile.email ?? '',
-        image: profile.picture ?? '',
+        email: profile.email ?? "",
+        image: profile.picture ?? "",
       };
     },
     style: {
@@ -39,4 +39,4 @@ export default function EchoProvider<P extends EchoProfile>(
     },
     options,
   };
-} 
+}

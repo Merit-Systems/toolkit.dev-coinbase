@@ -15,7 +15,7 @@ export async function updateTokensByUserId(
     access_token: string;
     expires_at: number;
     refresh_token: string;
-  }
+  },
 ) {
   return db.account.updateMany({
     where: {
@@ -28,4 +28,4 @@ export async function updateTokensByUserId(
       refresh_token: tokens.refresh_token,
     },
   });
-} 
+}
