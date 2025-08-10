@@ -39,6 +39,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AddCreditsButton } from "./add-credits";
+import { api } from "@/trpc/react";
 
 interface Props {
   chatId: string;
@@ -64,6 +66,9 @@ const PureMultimodalInput: React.FC<Props> = ({
     selectedChatModel,
     workbench,
   } = useChatContext();
+
+  const { data: echoBalance, isLoading } =
+    api.accounts.getEchoBalance.useQuery();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -367,12 +372,19 @@ const PureMultimodalInput: React.FC<Props> = ({
     return acceptedFileTypes;
   }, [supportsImages, supportsPdf]);
 
+  const needsCredits = useMemo(() => {
+    return isLoading || echoBalance === undefined || echoBalance < 0.05;
+  }, [isLoading, echoBalance]);
+
   const fileDisabledString = useMemo(() => {
+    if (needsCredits) {
+      return "You need to add credits to use this model.";
+    }
     if (acceptedFileTypes.length === 0) {
       return "This model does not support attachments. Please select a different model.";
     }
     return "";
-  }, [acceptedFileTypes]);
+  }, [acceptedFileTypes, needsCredits]);
 
   return (
     <div className="relative flex w-full flex-col">
@@ -420,7 +432,12 @@ const PureMultimodalInput: React.FC<Props> = ({
         </div>
       )}
 
-      <div className="bg-muted focus-within:ring-ring relative rounded-2xl transition-all duration-200 focus-within:ring-2">
+      <div
+        className={cn(
+          "bg-muted relative rounded-2xl transition-all duration-200",
+          !needsCredits && "focus-within:ring-ring focus-within:ring-2",
+        )}
+      >
         <Textarea
           data-testid="multimodal-input"
           ref={textareaRef}
@@ -450,18 +467,19 @@ const PureMultimodalInput: React.FC<Props> = ({
               }
             }
           }}
-          disabled={!selectedChatModel}
+          disabled={!selectedChatModel || needsCredits}
         />
 
         <div className="border-border/50 flex items-center justify-between border-t p-2">
           <div className="flex items-center gap-2">
+            <AddCreditsButton needsCredits={needsCredits} />
+            <ModelSelect disabled={needsCredits} />
+            <ToolsSelect disabled={needsCredits} />
             <AttachmentsButton
               fileInputRef={fileInputRef}
               status={status}
               disabledString={fileDisabledString}
             />
-            <ModelSelect />
-            <ToolsSelect />
           </div>
 
           <div className="flex items-center">
@@ -516,7 +534,7 @@ function PureAttachmentsButton({
       data-testid="attachments-button"
       size="icon"
       variant="outline"
-      className={cn("bg-transparent", {
+      className={cn("rounded-xl bg-transparent", {
         "cursor-not-allowed opacity-50": status !== "ready" || !!disabledString,
       })}
       onClick={(event) => {

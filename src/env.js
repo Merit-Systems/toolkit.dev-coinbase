@@ -39,6 +39,10 @@ const createAuthSchema = () => {
     authSchema.AUTH_SPOTIFY_SECRET = z.string();
   }
 
+  if (process.env.ECHO_APP_ID) {
+    authSchema.ECHO_APP_ID = z.string();
+  }
+
   return authSchema;
 };
 

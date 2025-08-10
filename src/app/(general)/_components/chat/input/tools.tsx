@@ -23,7 +23,11 @@ import { cn } from "@/lib/utils";
 
 import { LanguageModelCapability } from "@/ai/language/types";
 
-export const ToolsSelect = () => {
+interface Props {
+  disabled: boolean;
+}
+
+export const ToolsSelect: React.FC<Props> = ({ disabled }) => {
   const { toolkits, addToolkit, removeToolkit, selectedChatModel, workbench } =
     useChatContext();
   const searchParams = useSearchParams();
@@ -80,10 +84,11 @@ export const ToolsSelect = () => {
       <Button
         variant={"outline"}
         className={cn(
-          "w-fit justify-center bg-transparent md:w-auto md:px-2",
+          "w-fit justify-center rounded-xl bg-transparent md:w-auto md:px-2",
           toolkits.length === 0 && "size-9 md:w-auto",
         )}
         disabled={
+          disabled ||
           !selectedChatModel?.capabilities?.includes(
             LanguageModelCapability.ToolCalling,
           )

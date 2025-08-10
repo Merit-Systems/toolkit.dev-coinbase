@@ -176,6 +176,9 @@ importers:
       '@xyflow/react':
         specifier: ^12.8.2
         version: 12.8.2(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@zdql/echo-react-sdk':
+        specifier: ^0.1.25
+        version: 0.1.25(openai@5.3.0(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.56))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       ai:
         specifier: ^4.3.16
         version: 4.3.16(react@19.1.0)(zod@3.25.56)
@@ -2890,6 +2893,19 @@ packages:
   '@xyflow/system@0.0.66':
     resolution: {integrity: sha512-TTxESDwPsATnuDMUeYYtKe4wt9v8bRO29dgYBhR8HyhSCzipnAdIL/1CDfFd+WqS1srVreo24u6zZeVIDk4r3Q==}
 
+  '@zdql/echo-react-sdk@0.1.25':
+    resolution: {integrity: sha512-5R5PqXLxJIkgvRid1fux+O0LpDsNyBbaQl41T4ud8h6S8NTexVHs9sT3IdxyjtZGGDm4ASlHxOMEAfJuIxqqKw==}
+    peerDependencies:
+      openai: ^4.0.0 || ^5.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      openai:
+        optional: true
+
+  '@zdql/echo-typescript-sdk@1.0.19':
+    resolution: {integrity: sha512-Nle9z9T3acAa0Wtc7rireYVryJQmzDgn77Jx8yIj5YPYjk8UHjRDHfKjEvoX8V3HrxTWyHLlWt2XEhwj2jEKsA==}
+
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
 
@@ -3641,6 +3657,9 @@ packages:
   domhandler@5.0.3:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
+
+  dompurify@3.2.6:
+    resolution: {integrity: sha512-/2GogDQlohXPZe6D6NOgQvXLPSYBqIWMnZ8zzOhn09REE4eyAzb+Hed3jhoM9OkuaJ8P6ZGTTVWQKAi8ieIzfQ==}
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
@@ -4727,6 +4746,10 @@ packages:
   jws@4.0.0:
     resolution: {integrity: sha512-KDncfTmOZoOMTFG4mBlG0qUIOlc03fmzH+ru6RgYVZhPkyiy/92Owlt/8UEN+a4TXR1FQetfIpJE8ApdvdVxTg==}
 
+  jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
+
   katex@0.16.22:
     resolution: {integrity: sha512-XCHRdUw4lf3SKBaJe4EvgqIuWwkPSo9XoeO8GjQW94Bp7TWv9hNhzZjZ+OH9yf1UmLygb7DIT5GSFQiyt16zYg==}
     hasBin: true
@@ -5391,6 +5414,10 @@ packages:
 
   ofetch@1.4.1:
     resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
+
+  oidc-client-ts@3.3.0:
+    resolution: {integrity: sha512-t13S540ZwFOEZKLYHJwSfITugupW4uYLwuQSSXyKH/wHwZ+7FvgHE7gnNJh1YQIZ1Yd1hKSRjqeXGSUtS0r9JA==}
+    engines: {node: '>=18'}
 
   ollama@0.5.16:
     resolution: {integrity: sha512-OEbxxOIUZtdZgOaTPAULo051F5y+Z1vosxEYOoABPnQKeW7i4O8tJNlxCB+xioyoorVqgjkdj+TA1f1Hy2ug/w==}
@@ -11148,6 +11175,24 @@ snapshots:
       d3-selection: 3.0.0
       d3-zoom: 3.0.0
 
+  '@zdql/echo-react-sdk@0.1.25(openai@5.3.0(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.56))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@zdql/echo-typescript-sdk': 1.0.19
+      dompurify: 3.2.6
+      oidc-client-ts: 3.3.0
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+    optionalDependencies:
+      openai: 5.3.0(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.56)
+    transitivePeerDependencies:
+      - debug
+
+  '@zdql/echo-typescript-sdk@1.0.19':
+    dependencies:
+      axios: 1.11.0
+    transitivePeerDependencies:
+      - debug
+
   abbrev@1.1.1:
     optional: true
 
@@ -11911,6 +11956,10 @@ snapshots:
   domhandler@5.0.3:
     dependencies:
       domelementtype: 2.3.0
+
+  dompurify@3.2.6:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
 
   domutils@3.2.2:
     dependencies:
@@ -13390,6 +13439,8 @@ snapshots:
       jwa: 2.0.1
       safe-buffer: 5.2.1
 
+  jwt-decode@4.0.0: {}
+
   katex@0.16.22:
     dependencies:
       commander: 8.3.0
@@ -14287,6 +14338,10 @@ snapshots:
       destr: 2.0.5
       node-fetch-native: 1.6.7
       ufo: 1.6.1
+
+  oidc-client-ts@3.3.0:
+    dependencies:
+      jwt-decode: 4.0.0
 
   ollama@0.5.16:
     dependencies:
