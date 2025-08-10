@@ -15,7 +15,7 @@ import { api } from "@/trpc/react";
 
 export const OpenRouterChecks = () => {
   const hasOpenRouterKey = useEnvVarAvailable("OPENROUTER_API_KEY");
-
+  const hasEchoKey = useEnvVarAvailable("ECHO_APP_ID");
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -82,6 +82,10 @@ export const OpenRouterChecks = () => {
       void updateOpenRouterKey();
     }
   }, [searchParams, isLoading]);
+
+  if (hasEchoKey) {
+    return null;
+  }
 
   if (!hasOpenRouterKey) {
     return <KeyModal />;

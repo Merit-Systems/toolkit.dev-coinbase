@@ -260,10 +260,14 @@ export async function POST(request: Request) {
 
     const fullSystemPrompt = baseSystemPrompt + toolkitInstructions;
 
+    const echoAccount = await api.accounts.getAccountByProvider("echo");
+    console.log("echoAccount", echoAccount);
+
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText(
           `${selectedChatModel}${useNativeSearch ? ":search" : ""}`,
+          echoAccount?.access_token ?? "",
           {
             system: fullSystemPrompt,
             messages: convertToCoreMessages(messages),
@@ -403,7 +407,10 @@ export async function POST(request: Request) {
 }
 
 async function generateTitleFromUserMessage(message: UIMessage) {
-  const { text: title } = await generateText("openai/gpt-4o-mini", {
+  const echoAccount = await api.accounts.getAccountByProvider("echo");
+  console.log("echoAccount", echoAccount);
+
+  const { text: title } = await generateText("openai/gpt-4o-mini", echoAccount?.access_token ?? "", {
     system: `\n
       - you will generate a short title based on the first message a user begins a conversation with
       - ensure it is not more than 80 characters long
