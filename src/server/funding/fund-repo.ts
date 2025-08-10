@@ -19,10 +19,6 @@ export interface FundRepoResult {
 
 export async function fundRepo(amount: number): Promise<FundRepoResult> {
   try {
-    if (!amount || typeof amount !== "number") {
-      throw new Error("Invalid amount provided");
-    }
-
     const repoId = GITHUB_REPO_ID;
     const tokenAddress = USDC_ADDRESS;
     const repoInstanceId = 0;
@@ -30,8 +26,7 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
 
     // CDP wallets
     const cdp = new CdpClient();
-    console.log("CDP client created");
-    
+
     const owner = await cdp.evm.getOrCreateAccount({
       name: "toolkit-fund-owner",
     });
@@ -46,15 +41,15 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
       smartAccount,
       network: "base",
       calls: [
-          {
-              to: tokenAddress,
-              value: 0n,
-              data: encodeFunctionData({
-                abi: ERC20_CONTRACT_ABI as Abi,
-                functionName: "approve",
-                args: [MERIT_CONTRACT_ADDRESS, amountBigInt],
-              }),
-            },
+        {
+          to: tokenAddress,
+          value: 0n,
+          data: encodeFunctionData({
+            abi: ERC20_CONTRACT_ABI as Abi,
+            functionName: "approve",
+            args: [MERIT_CONTRACT_ADDRESS, amountBigInt],
+          }),
+        },
         {
           to: MERIT_CONTRACT_ADDRESS,
           value: 0n,
@@ -78,7 +73,6 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
       smartAccountAddress: smartAccount.address,
       userOpHash: result.userOpHash,
     });
-    console.log("User operation processed successfully");
 
     return {
       success: true,
@@ -93,10 +87,10 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       amount,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
+
     // Re-throw the error to maintain the original function signature
     throw error;
   }
-} 
+}
