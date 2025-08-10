@@ -12,6 +12,14 @@ import { useChatContext } from "@/app/(general)/_contexts/chat-context";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import type { ClientToolkit } from "@/toolkits/types";
+import {
+  useAccount,
+  useConnections,
+  useConnectors,
+  useWalletClient,
+} from "wagmi";
+import { decodeXPaymentResponse, wrapFetchWithPayment } from "x402-fetch";
+import { useEvmAddress } from "@coinbase/cdp-hooks";
 
 interface Props {
   toolInvocation: ToolInvocation;
@@ -44,8 +52,6 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
       </pre>
     );
   }
-
-  console.log("toolInvocation", toolInvocation);
 
   const typedServer = server as Toolkits;
 
@@ -154,7 +160,6 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
               </motion.div>
             ) : toolConfig && toolInvocation.state === "result" ? (
               (() => {
-                console.log("toolInvocation", toolInvocation);
                 const result = toolInvocation.result as ToolResult<
                   typeof toolConfig.outputSchema
                 >;
@@ -289,14 +294,33 @@ const MessageToolPayButton = <
 }: PayButtonProps<T, Tool>) => {
   const { addToolResult } = useChatContext();
 
+  const { data: walletClient } = useWalletClient({
+    chainId: 8453,
+  });
+
+  const fetchWithPayment = wrapFetchWithPayment(
+    fetch,
+    walletClient as unknown as Parameters<typeof wrapFetchWithPayment>[1],
+  );
+
   const { mutate: executeTool, isPending } = useMutation({
     mutationFn: async () => {
-      const result = await fetch(`/api/tool/${toolkit}/${tool}`, {
+      const result = await fetchWithPayment(`/api/tool/${toolkit}/${tool}`, {
         method: "POST",
         body: JSON.stringify(toolInvocation.args),
+      }).then(async (response) => {
+        console.log(response);
+        const body = (await response.json()) as z.infer<
+          typeof toolConfig.outputSchema
+        >;
+        const paymentResponse = decodeXPaymentResponse(
+          response.headers.get("x-payment-response")!,
+        );
+        console.log(paymentResponse);
+        return body;
       });
 
-      return result.json() as Promise<z.infer<typeof toolConfig.outputSchema>>;
+      return result;
     },
     onSuccess: (data) => {
       addToolResult({
@@ -311,7 +335,10 @@ const MessageToolPayButton = <
         toolCallId: toolInvocation.toolCallId,
         result: {
           isError: true,
-          error: error.message ?? "An error occurred while executing the tool",
+          result: {
+            error:
+              error.message ?? "An error occurred while executing the tool",
+          },
         },
       });
     },

@@ -17,22 +17,20 @@ const cdpConfig = {
 };
 
 const connector = createCDPEmbeddedWalletConnector({
-  cdpConfig: cdpConfig,
+  cdpConfig,
   providerConfig: {
-    chains: [base, baseSepolia],
+    chains: [base],
     transports: {
       [base.id]: http(),
-      [baseSepolia.id]: http(),
     },
   },
 });
 
 const wagmiConfig = createConfig({
   connectors: [connector],
-  chains: [base, baseSepolia],
+  chains: [base],
   transports: {
     [base.id]: http(),
-    [baseSepolia.id]: http(),
   },
 });
 
