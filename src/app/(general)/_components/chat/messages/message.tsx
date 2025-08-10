@@ -68,7 +68,7 @@ const PurePreviewMessage: React.FC<Props> = ({
         >
           <div
             className={cn(
-              "flex w-full max-w-full flex-col gap-4",
+              "md:max-w-75% flex w-full max-w-full flex-col gap-4",
               requiresScrollPadding &&
                 message.role === "assistant" &&
                 "min-h-24 md:min-h-96",

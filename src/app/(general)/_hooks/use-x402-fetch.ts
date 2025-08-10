@@ -1,17 +1,20 @@
-import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  type UseMutationOptions,
+} from "@tanstack/react-query";
 import { useWalletClient } from "wagmi";
 import { wrapFetchWithPayment } from "x402-fetch";
 import { useBalance } from "./use-balance";
-import { useEvmAddress } from "@coinbase/cdp-hooks";
 
 export const useX402Fetch = (
   url: string,
   init?: RequestInit,
   options?: Omit<UseMutationOptions, "mutationFn">,
 ) => {
-  const { evmAddress } = useEvmAddress();
+  const queryClient = useQueryClient();
 
-  const { refetch: refetchBalance } = useBalance(evmAddress ?? undefined);
+  const { queryKey } = useBalance();
 
   const { data: walletClient } = useWalletClient({
     chainId: 8453,
@@ -19,6 +22,7 @@ export const useX402Fetch = (
   const fetchWithPayment = wrapFetchWithPayment(
     fetch,
     walletClient as unknown as Parameters<typeof wrapFetchWithPayment>[1],
+    1000000000000000000n,
   );
   return useMutation({
     mutationFn: async () => {
@@ -28,10 +32,10 @@ export const useX402Fetch = (
         response.json(),
       );
     },
+    ...options,
     onSuccess: (data, variables, context) => {
-      void refetchBalance();
+      void queryClient.invalidateQueries({ queryKey });
       options?.onSuccess?.(data, variables, context);
     },
-    ...options,
   });
 };

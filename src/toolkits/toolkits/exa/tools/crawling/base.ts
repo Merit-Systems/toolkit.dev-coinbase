@@ -20,4 +20,5 @@ export const baseCrawlingTool = createBaseTool({
       }),
     ),
   }),
+  price: 0.05,
 });

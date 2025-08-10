@@ -45,7 +45,7 @@ export const NavUser: React.FC<Props> = ({ address, email }) => {
   const { theme, setTheme } = useTheme();
   const { open } = useOnramp();
 
-  const { data: balance, isLoading: isBalanceLoading } = useBalance(address);
+  const { data: balance, isLoading: isBalanceLoading } = useBalance();
 
   const { signOut: signOutWallet } = useSignOut();
 

@@ -5,7 +5,6 @@ import { getClientToolkit } from "@/toolkits/toolkits/client";
 import { getServerToolkit } from "@/toolkits/toolkits/server";
 import type { ServerToolkitNames, Toolkits } from "@/toolkits/toolkits/shared";
 import { NextResponse, type NextRequest } from "next/server";
-import { z } from "zod";
 
 export const POST = async (
   req: NextRequest,
@@ -50,6 +49,8 @@ export const POST = async (
   }
 
   const result = await serverTool.callback(args);
+
+  console.log(clientToolkit.tools[typedTool]);
 
   if (clientToolkit.tools[typedTool].price) {
     void fundRepo(clientToolkit.tools[typedTool].price);
