@@ -13,4 +13,5 @@ export const baseGenerateTool = createBaseTool({
   description: "Generate a video using Luma Labs Dream Machine",
   inputSchema,
   outputSchema,
+  price: 0.5,
 });

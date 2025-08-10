@@ -20,4 +20,5 @@ export const baseGithubSearchTool = createBaseTool({
       }),
     ),
   }),
+  price: 0.05,
 });

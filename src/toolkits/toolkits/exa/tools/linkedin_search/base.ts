@@ -20,4 +20,5 @@ export const baseLinkedinSearchTool = createBaseTool({
       }),
     ),
   }),
+  price: 0.05,
 });

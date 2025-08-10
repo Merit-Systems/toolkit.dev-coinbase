@@ -20,4 +20,5 @@ export const baseCompanyResearchTool = createBaseTool({
       }),
     ),
   }),
+  price: 0.05,
 });

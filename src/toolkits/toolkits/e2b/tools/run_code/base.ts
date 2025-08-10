@@ -15,4 +15,5 @@ export const baseRunCodeTool = createBaseTool({
       .describe("The execution results from running the code"),
     logs: z.custom<Logs>().describe("Execution logs"),
   }),
+  price: 0.05,
 });
