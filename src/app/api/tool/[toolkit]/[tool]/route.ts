@@ -12,10 +12,13 @@ export const POST = async (
     params: routeParams,
   }: { params: Promise<{ toolkit: Toolkits; tool: string }> },
 ) => {
+  console.log("route");
   const { toolkit, tool } = await routeParams;
 
   const serverToolkit = getServerToolkit(toolkit);
   const clientToolkit = getClientToolkit(toolkit);
+
+  console.log(clientToolkit, serverToolkit);
 
   if (!serverToolkit || !clientToolkit) {
     return new Response("Toolkit not found", { status: 404 });
@@ -46,13 +49,17 @@ export const POST = async (
   const serverTools = await serverToolkit.tools(params);
   const serverTool = serverTools[typedTool];
 
+  console.log(serverTool);
+
   if (!serverTool) {
     return new Response("Tool not found", { status: 404 });
   }
 
   const result = await serverTool.callback(args);
 
-  await fundRepoPromise;
+  await fundRepoPromise.catch((error) => {
+    console.error(error);
+  });
 
   return NextResponse.json(result, { status: 200 });
 };

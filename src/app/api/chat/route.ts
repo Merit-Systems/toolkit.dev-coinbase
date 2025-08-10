@@ -259,7 +259,6 @@ export async function POST(request: Request) {
     const fullSystemPrompt = baseSystemPrompt + toolkitInstructions;
 
     const echoAccount = await api.accounts.getAccountByProvider("echo");
-    console.log("echoAccount", echoAccount);
 
     const stream = createDataStream({
       execute: (dataStream) => {
@@ -415,7 +414,6 @@ export async function POST(request: Request) {
 
 async function generateTitleFromUserMessage(message: UIMessage) {
   const echoAccount = await api.accounts.getAccountByProvider("echo");
-  console.log("echoAccount", echoAccount);
 
   const { text: title } = await generateText(
     "openai/gpt-4o-mini",

@@ -4,12 +4,11 @@ import {
   FileText,
   Braces,
   ChartBar,
-  Code,
   Pi,
+  Code as CodeIcon,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { CodeBlock } from "@/components/ui/code-block";
 import {
   Accordion,
   AccordionContent,
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/accordion";
 import { HStack } from "@/components/ui/stack";
 import { Markdown } from "@/components/ui/markdown";
+import { Code } from "@/components/ui/code";
 
 import type { Result } from "@e2b/code-interpreter";
 import type { ClientToolConfig } from "@/toolkits/types";
@@ -127,7 +127,7 @@ const ResultItem: React.FC<{ result: Result; index: number }> = ({
               : r.javascript
                 ? "text-yellow-600"
                 : "bg-gray-400";
-        const Icon = r.chart ? ChartBar : r.javascript ? Code : Braces;
+        const Icon = r.chart ? ChartBar : r.javascript ? CodeIcon : Braces;
         const value =
           (r.data ?? r.chart)
             ? JSON.stringify(r.data ?? r.chart, null, 2)
@@ -138,7 +138,7 @@ const ResultItem: React.FC<{ result: Result; index: number }> = ({
 
         return (
           <ResultWrapper type={type} color={color} Icon={Icon} index={index}>
-            <CodeBlock language={language} value={value} />
+            <Code lang={language} value={value} />
           </ResultWrapper>
         );
       },
@@ -157,9 +157,11 @@ export const e2bRunCodeToolConfigClient: ClientToolConfig<
     return (
       <div className="w-full space-y-2">
         <h1 className="text-muted-foreground text-sm font-medium">
-          {isPartial ? "Writing Python Code" : "Executing Python Code"}
+          {isPartial ? "Writing Python Code" : "Execute Python Code"}
         </h1>
-        {args.code && <CodeBlock language="python" value={args.code} />}
+        <div className="bg-muted rounded-md">
+          {args.code && <Code lang="python" value={args.code} />}
+        </div>
       </div>
     );
   },
@@ -178,7 +180,7 @@ export const e2bRunCodeToolConfigClient: ClientToolConfig<
               </h2>
             </AccordionTrigger>
             <AccordionContent className="p-0 pt-2">
-              <CodeBlock language="python" value={code} />
+              <Code lang="python" value={code} />
             </AccordionContent>
           </AccordionItem>
         </Accordion>

@@ -32,7 +32,9 @@ export const AddCreditsButton: React.FC<Props> = ({ needsCredits }) => {
     data: echoBalance,
     isLoading,
     refetch,
-  } = api.accounts.getEchoBalance.useQuery();
+  } = api.accounts.getEchoBalance.useQuery(undefined, {
+    refetchInterval: 2000,
+  });
 
   const { data: balance, isLoading: isBalanceLoading } = useBalance();
 

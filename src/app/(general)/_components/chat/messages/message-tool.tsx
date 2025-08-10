@@ -313,7 +313,9 @@ const MessageToolPayButton = <
       size={isPending || isSuccess ? "icon" : "sm"}
       className={"ml-auto size-fit p-1 text-xs"}
       onClick={() => executeTool()}
-      disabled={isPending}
+      disabled={
+        isPending || isSuccess || toolInvocation.state === "partial-call"
+      }
     >
       {isSuccess ? (
         <Check className="size-4" />
