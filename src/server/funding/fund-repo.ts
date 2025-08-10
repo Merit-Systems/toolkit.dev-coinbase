@@ -19,6 +19,7 @@ export interface FundRepoResult {
 }
 
 export async function fundRepo(amount: number): Promise<FundRepoResult> {
+  console.log("funding repo", amount);
   try {
     const repoId = GITHUB_REPO_ID;
     const tokenAddress = USDC_ADDRESS;
@@ -78,6 +79,8 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
       smartAccountAddress: smartAccount.address,
       userOpHash: result.userOpHash,
     });
+
+    console.log("funding repo success", result.userOpHash);
 
     return {
       success: true,
