@@ -161,51 +161,61 @@ export async function POST(request: Request) {
         return Object.keys(tools).reduce(
           (acc, toolName) => {
             const serverTool = tools[toolName as keyof typeof tools];
-            acc[`${id}_${toolName}`] = tool({
+
+            const toolConfig = {
               description: serverTool.description,
               parameters: serverTool.inputSchema,
-              // execute: async (args) => {
-              //   try {
-              //     const result = await serverTool.callback(args);
+            };
 
-              //     // Increment tool usage on successful execution
-              //     try {
-              //       const serverCaller = await createServerOnlyCaller();
-              //       await serverCaller.tools.incrementToolUsageServer({
-              //         toolkit: id,
-              //         tool: toolName,
-              //       });
-              //     } catch (error) {
-              //       console.error("Failed to increment tool usage:", error);
-              //     }
+            if (!serverTool.price) {
+              acc[`${id}_${toolName}`] = tool({
+                ...toolConfig,
+                execute: async (args) => {
+                  try {
+                    const result = await serverTool.callback(args);
 
-              //     if (serverTool.message) {
-              //       return {
-              //         result,
-              //         message:
-              //           typeof serverTool.message === "function"
-              //             ? serverTool.message(result)
-              //             : serverTool.message,
-              //       };
-              //     } else {
-              //       return {
-              //         result,
-              //       };
-              //     }
-              //   } catch (error) {
-              //     console.error(error);
-              //     return {
-              //       isError: true,
-              //       result: {
-              //         error:
-              //           error instanceof Error
-              //             ? error.message
-              //             : "An error occurred while executing the tool",
-              //       },
-              //     };
-              //   }
-              // },
-            });
+                    // Increment tool usage on successful execution
+                    try {
+                      const serverCaller = await createServerOnlyCaller();
+                      await serverCaller.tools.incrementToolUsageServer({
+                        toolkit: id,
+                        tool: toolName,
+                      });
+                    } catch (error) {
+                      console.error("Failed to increment tool usage:", error);
+                    }
+
+                    if (serverTool.message) {
+                      return {
+                        result,
+                        message:
+                          typeof serverTool.message === "function"
+                            ? serverTool.message(result)
+                            : serverTool.message,
+                      };
+                    } else {
+                      return {
+                        result,
+                      };
+                    }
+                  } catch (error) {
+                    console.error(error);
+                    return {
+                      isError: true,
+                      result: {
+                        error:
+                          error instanceof Error
+                            ? error.message
+                            : "An error occurred while executing the tool",
+                      },
+                    };
+                  }
+                },
+              });
+            } else {
+              acc[`${id}_${toolName}`] = tool(toolConfig);
+            }
+
             return acc;
           },
           {} as Record<string, Tool>,
