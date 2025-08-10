@@ -64,7 +64,13 @@ export async function POST(request: Request) {
   let requestBody: PostRequestBody;
 
   try {
-    requestBody = postRequestBodySchema.parse(await request.json());
+    const body = (await request.json()) as PostRequestBody;
+
+    console.log({
+      parts: body.message.parts,
+    });
+
+    requestBody = postRequestBodySchema.parse(body);
   } catch (error) {
     console.error(error);
     return new ChatSDKError("bad_request:api").toResponse();
@@ -87,12 +93,6 @@ export async function POST(request: Request) {
     if (!session?.user) {
       return new ChatSDKError("unauthorized:chat").toResponse();
     }
-
-    // const messageCount = await api.messages.getMessageCountByUserId();
-
-    // if (messageCount > 100) {
-    //   return new ChatSDKError("rate_limit:chat").toResponse();
-    // }
 
     const chat = await api.chats.getChat(id);
 
@@ -137,19 +137,26 @@ export async function POST(request: Request) {
       message,
     });
 
-    await api.messages.createMessage({
-      chatId: id,
-      id: message.id,
-      role: "user",
-      parts: message.parts,
-      attachments:
-        message.experimental_attachments?.map((attachment) => ({
-          url: attachment.url,
-          name: attachment.name,
-          contentType: attachment.contentType,
-        })) ?? [],
-      modelId: "user",
-    });
+    if (message.role === "assistant") {
+      await api.messages.updateMessage({
+        id: message.id,
+        parts: message.parts,
+      });
+    } else {
+      await api.messages.createMessage({
+        chatId: id,
+        id: message.id,
+        role: "user",
+        parts: message.parts,
+        attachments:
+          message.experimental_attachments?.map((attachment) => ({
+            url: attachment.url,
+            name: attachment.name,
+            contentType: attachment.contentType,
+          })) ?? [],
+        modelId: "user",
+      });
+    }
 
     const streamId = generateUUID();
     await api.streams.createStreamId({ streamId, chatId: id });

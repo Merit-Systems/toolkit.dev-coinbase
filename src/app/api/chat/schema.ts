@@ -8,7 +8,22 @@ import { clientToolkits } from "@/toolkits/toolkits/client";
 
 const textPartSchema = z.object({
   text: z.string().min(1).max(MESSAGE_MAX_LENGTH),
-  type: z.enum(["text"]),
+  type: z.literal("text"),
+});
+
+const toolPartSchema = z.object({
+  type: z.literal("tool-invocation"),
+  toolInvocation: z.object({
+    state: z.literal("result"),
+    toolCallId: z.string(),
+    toolName: z.string(),
+    args: z.record(z.string(), z.any()),
+    result: z.record(z.string(), z.any()),
+  }),
+});
+
+const stepStartPartSchema = z.object({
+  type: z.literal("step-start"),
 });
 
 export const postRequestBodySchema = z.object({
@@ -16,9 +31,15 @@ export const postRequestBodySchema = z.object({
   message: z.object({
     id: z.string().uuid(),
     createdAt: z.coerce.date(),
-    role: z.enum(["user"]),
-    content: z.string().min(1).max(MESSAGE_MAX_LENGTH),
-    parts: z.array(textPartSchema),
+    role: z.enum(["user", "assistant"]),
+    content: z.string().max(MESSAGE_MAX_LENGTH),
+    parts: z.array(
+      z.discriminatedUnion("type", [
+        textPartSchema,
+        toolPartSchema,
+        stepStartPartSchema,
+      ]),
+    ),
     experimental_attachments: z
       .array(
         z.object({

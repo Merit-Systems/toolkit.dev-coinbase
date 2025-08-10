@@ -33,7 +33,7 @@ import { IS_DEVELOPMENT } from "@/lib/constants";
 import type { ReactNode } from "react";
 import type { Attachment, UIMessage } from "ai";
 import type { UseChatHelpers } from "@ai-sdk/react";
-import type { ClientToolkit } from "@/toolkits/types";
+import type { ClientToolkit, ServerToolConfig } from "@/toolkits/types";
 import type { z } from "zod";
 import type { SelectedToolkit } from "@/components/toolkit/types";
 import type { Toolkits } from "@/toolkits/toolkits/shared";
@@ -76,6 +76,14 @@ interface ChatContextType {
   stop: () => void;
   reload: UseChatHelpers["reload"];
   append: UseChatHelpers["append"];
+  addToolResult: ({
+    toolCallId,
+    result,
+  }: {
+    toolCallId: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    result: any;
+  }) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -219,6 +227,7 @@ export function ChatProvider({
     reload,
     experimental_resume,
     data,
+    addToolResult,
   } = useChat({
     id,
     initialMessages,
@@ -326,6 +335,7 @@ export function ChatProvider({
     addToolkit,
     removeToolkit,
     workbench,
+    addToolResult,
   };
 
   return (

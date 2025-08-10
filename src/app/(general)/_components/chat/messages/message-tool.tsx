@@ -45,6 +45,8 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
     );
   }
 
+  console.log("toolInvocation", toolInvocation);
+
   const typedServer = server as Toolkits;
 
   const clientToolkit = getClientToolkit(typedServer);
@@ -152,6 +154,7 @@ const MessageToolComponent: React.FC<Props> = ({ toolInvocation }) => {
               </motion.div>
             ) : toolConfig && toolInvocation.state === "result" ? (
               (() => {
+                console.log("toolInvocation", toolInvocation);
                 const result = toolInvocation.result as ToolResult<
                   typeof toolConfig.outputSchema
                 >;
@@ -284,6 +287,8 @@ const MessageToolPayButton = <
   toolConfig,
   toolInvocation,
 }: PayButtonProps<T, Tool>) => {
+  const { addToolResult } = useChatContext();
+
   const { mutate: executeTool, isPending } = useMutation({
     mutationFn: async () => {
       const result = await fetch(`/api/tool/${toolkit}/${tool}`, {
@@ -294,7 +299,21 @@ const MessageToolPayButton = <
       return result.json() as Promise<z.infer<typeof toolConfig.outputSchema>>;
     },
     onSuccess: (data) => {
-      console.log(data);
+      addToolResult({
+        toolCallId: toolInvocation.toolCallId,
+        result: {
+          result: data,
+        },
+      });
+    },
+    onError: (error) => {
+      addToolResult({
+        toolCallId: toolInvocation.toolCallId,
+        result: {
+          isError: true,
+          error: error.message ?? "An error occurred while executing the tool",
+        },
+      });
     },
   });
 
