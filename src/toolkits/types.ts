@@ -79,6 +79,7 @@ export type BaseTool<
   description: string;
   inputSchema: ZodObject<Args>;
   outputSchema: ZodObject<Result>;
+  price?: number;
 };
 
 export type ServerToolConfig<

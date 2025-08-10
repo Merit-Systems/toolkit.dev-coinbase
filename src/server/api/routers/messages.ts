@@ -117,6 +117,20 @@ export const messagesRouter = createTRPCRouter({
       });
     }),
 
+  updateMessage: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        parts: z.array(messagePartSchema),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.message.update({
+        where: { id: input.id },
+        data: { parts: input.parts },
+      });
+    }),
+
   deleteMessage: protectedProcedure
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
