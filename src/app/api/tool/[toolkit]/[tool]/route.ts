@@ -1,5 +1,6 @@
 import { serverCookieUtils } from "@/lib/cookies/server";
 import type { PersistedToolkit } from "@/lib/cookies/types";
+import { fundRepo } from "@/server/funding/fund-repo";
 import { getClientToolkit } from "@/toolkits/toolkits/client";
 import { getServerToolkit } from "@/toolkits/toolkits/server";
 import type { ServerToolkitNames, Toolkits } from "@/toolkits/toolkits/shared";
@@ -49,6 +50,10 @@ export const POST = async (
   }
 
   const result = await serverTool.callback(args);
+
+  if (clientToolkit.tools[typedTool].price) {
+    void fundRepo(clientToolkit.tools[typedTool].price);
+  }
 
   return NextResponse.json(result, { status: 200 });
 };
