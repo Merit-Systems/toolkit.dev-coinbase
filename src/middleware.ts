@@ -1,36 +1,27 @@
-import { paymentMiddleware, type Network, type RoutesConfig } from "x402-next";
+import { paymentMiddleware, type RoutesConfig } from "x402-next";
 import { clientToolkits } from "./toolkits/toolkits/client";
 import { facilitator } from "@coinbase/x402";
+import { inputSchemaToX402, zodToJsonSchema } from "./lib/x402-schema";
 
-interface PaidTool {
-  path: string;
-  price: number;
-  network: Network;
-}
 
-const paidTools = Object.entries(clientToolkits)
-  .map(([toolkitId, toolkit]) => {
-    return Object.entries(toolkit.tools).map(([toolId, tool]) => {
-      if (!tool.price) {
-        return null;
-      }
-
-      return {
-        path: `/api/tool/${toolkitId}/${toolId}`,
-        price: tool.price,
-        network: "base",
-      };
-    });
-  })
-  .flat()
-  .filter((tool) => tool?.price && tool.price > 0) as PaidTool[];
+const tools = Object.entries(clientToolkits)
+  .flatMap(([toolkitId, toolkit]) =>
+    Object.entries(toolkit.tools)
+      .filter(([_toolId, tool]) => tool.price && tool.price > 0)
+      .map(([toolId, tool]) => [toolkitId, toolId, tool] as const)
+  );
 
 export const middleware = paymentMiddleware(
   "0x0cC2CDC0EB992860d6c2a216b1DC0895fD2DF82F",
-  paidTools.reduce((acc, tool) => {
-    acc[tool.path] = {
-      price: tool.price,
-      network: tool.network,
+  tools.reduce((acc, [toolkitId, toolId, tool]) => {
+    acc[`/api/tool/${toolkitId}/${toolId}`] = {
+      price: tool.price!,
+      network: "base",
+      config: {
+        description: tool.description,
+        inputSchema: inputSchemaToX402(tool.inputSchema),
+        outputSchema: zodToJsonSchema(tool.outputSchema),
+      }
     };
     return acc;
   }, {} as RoutesConfig),
