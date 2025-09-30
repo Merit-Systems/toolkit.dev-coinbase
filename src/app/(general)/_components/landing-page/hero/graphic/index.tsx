@@ -3,8 +3,6 @@
 import { useRef } from "react";
 
 import {
-  Trophy,
-  CircleDollarSign,
   Wrench,
   Server,
   Paintbrush,
