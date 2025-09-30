@@ -10,10 +10,11 @@ export const POST = async (
   req: NextRequest,
   {
     params: routeParams,
-  }: { params: Promise<{ toolkit: Toolkits; tool: string }> },
+  }: { params: Promise<{ toolkit: string; tool: string }> },
 ) => {
   console.log("route");
-  const { toolkit, tool } = await routeParams;
+  const { toolkit: untypedToolkit, tool } = await routeParams;
+  const toolkit = untypedToolkit as Toolkits;
 
   const serverToolkit = getServerToolkit(toolkit);
   const clientToolkit = getClientToolkit(toolkit);
