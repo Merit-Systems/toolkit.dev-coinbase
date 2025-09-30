@@ -1,7 +1,7 @@
 import { paymentMiddleware, type RoutesConfig } from "x402-next";
 import { clientToolkits } from "./toolkits/toolkits/client";
 import { facilitator } from "@coinbase/x402";
-import { convertInputSchemaToHTTPRequest } from "./lib/http-schema";
+import { inputSchemaToX402, zodToJsonSchema } from "./lib/x402-schema";
 
 
 const tools = Object.entries(clientToolkits)
@@ -19,8 +19,8 @@ export const middleware = paymentMiddleware(
       network: "base",
       config: {
         description: tool.description,
-        inputSchema: convertInputSchemaToHTTPRequest(tool.inputSchema),
-        outputSchema: tool.outputSchema,
+        inputSchema: inputSchemaToX402(tool.inputSchema),
+        outputSchema: zodToJsonSchema(tool.outputSchema),
       }
     };
     return acc;
