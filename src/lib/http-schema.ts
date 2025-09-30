@@ -1,26 +1,54 @@
-import type { ZodObject, ZodRawShape } from "zod";
+import type { ZodObject, ZodRawShape, ZodTypeAny } from "zod";
 import type { HTTPRequestStructure } from "x402/types";
 
-export function convertInputSchemaToHTTPRequest(inputSchema: ZodObject<ZodRawShape>): HTTPRequestStructure {
-  // Use zod's built-in JSON schema generation
-  const jsonSchema = (inputSchema as any).toJSONSchema();
+function getZodFieldInfo(zodType: ZodTypeAny): any {
+  const def = zodType._def;
 
-  // Convert JSON schema properties to our field format
-  const bodyFields: Record<string, any> = {};
-
-  if (jsonSchema.properties) {
-    for (const [fieldName, fieldSchema] of Object.entries(jsonSchema.properties)) {
-      const schema = fieldSchema as any;
-      const isRequired = jsonSchema.required?.includes(fieldName) ?? false;
-
-      bodyFields[fieldName] = {
-        type: schema.type || "any",
-        required: isRequired,
-        ...(schema.description && { description: schema.description }),
-        ...(schema.enum && { enum: schema.enum }),
-      };
-    }
+  // Handle optional wrapper
+  if (def.typeName === "ZodOptional") {
+    const innerInfo = getZodFieldInfo(def.innerType);
+    return {
+      ...innerInfo,
+      required: false,
+    };
   }
+
+  // Base type mapping
+  const baseInfo = (() => {
+    switch (def.typeName) {
+      case "ZodString":
+        return { type: "string" };
+      case "ZodNumber":
+        return { type: "number" };
+      case "ZodBoolean":
+        return { type: "boolean" };
+      case "ZodArray":
+        return { type: "array" };
+      case "ZodEnum":
+        return { type: "string", enum: def.values };
+      case "ZodObject":
+        return { type: "object" };
+      case "ZodRecord":
+        return { type: "object" };
+      default:
+        return { type: "any" };
+    }
+  })();
+
+  return {
+    ...baseInfo,
+    required: true, // Default to required unless wrapped in ZodOptional
+    ...(def.description && { description: def.description }),
+  };
+}
+
+export function convertInputSchemaToHTTPRequest(inputSchema: ZodObject<ZodRawShape>): HTTPRequestStructure {
+  const shape = inputSchema.shape;
+
+  const bodyFields = Object.entries(shape).reduce((acc, [fieldName, zodField]) => {
+    acc[fieldName] = getZodFieldInfo(zodField);
+    return acc;
+  }, {} as Record<string, any>);
 
   return {
     type: "http" as const,
