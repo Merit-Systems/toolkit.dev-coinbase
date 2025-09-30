@@ -1,6 +1,20 @@
 import type { ZodObject, ZodRawShape, ZodTypeAny } from "zod";
 import type { HTTPRequestStructure } from "x402/types";
 
+interface JsonSchemaField {
+  type: string;
+  required: boolean;
+  description?: string;
+  enum?: unknown[];
+}
+
+interface ZodDef {
+  typeName: string;
+  innerType?: ZodTypeAny;
+  values?: unknown[];
+  description?: string;
+}
+
 /**
  * Lite version of zod-to-json-schema conversion for zod v3
  * Note: zod v4+ has built-in .toJSONSchema() method, but we're using v3
@@ -11,27 +25,30 @@ export function zodToJsonSchema(zodSchema: ZodObject<ZodRawShape>) {
   const properties = Object.entries(shape).reduce((acc, [fieldName, zodField]) => {
     acc[fieldName] = getZodFieldInfo(zodField);
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, JsonSchemaField>);
 
   return {
     type: "object",
     properties,
     required: Object.entries(properties)
-      .filter(([_, fieldInfo]) => fieldInfo.required)
+      .filter(([, fieldInfo]) => fieldInfo.required)
       .map(([fieldName]) => fieldName),
   };
 }
 
-function getZodFieldInfo(zodType: ZodTypeAny): any {
-  const def = zodType._def;
+function getZodFieldInfo(zodType: ZodTypeAny): JsonSchemaField {
+  const def = zodType._def as ZodDef;
 
   // Handle optional wrapper
   if (def.typeName === "ZodOptional") {
-    const innerInfo = getZodFieldInfo(def.innerType);
-    return {
-      ...innerInfo,
-      required: false,
-    };
+    const innerType = def.innerType;
+    if (innerType) {
+      const innerInfo = getZodFieldInfo(innerType);
+      return {
+        ...innerInfo,
+        required: false,
+      };
+    }
   }
 
   // Base type mapping
@@ -69,7 +86,7 @@ export function inputSchemaToX402(inputSchema: ZodObject<ZodRawShape>): HTTPRequ
   const bodyFields = Object.entries(jsonSchema.properties).reduce((acc, [fieldName, fieldInfo]) => {
     acc[fieldName] = fieldInfo;
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, JsonSchemaField>);
 
   return {
     type: "http" as const,
