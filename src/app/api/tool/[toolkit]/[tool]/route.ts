@@ -3,7 +3,7 @@ import type { PersistedToolkit } from "@/lib/cookies/types";
 import { fundRepo } from "@/server/funding/fund-repo";
 import { getClientToolkit } from "@/toolkits/toolkits/client";
 import { getServerToolkit } from "@/toolkits/toolkits/server";
-import type { ServerToolkitNames, Toolkits } from "@/toolkits/toolkits/shared";
+import { type ServerToolkitNames, Toolkits } from "@/toolkits/toolkits/shared";
 import { NextResponse, type NextRequest } from "next/server";
 
 export const POST = async (
@@ -36,7 +36,7 @@ export const POST = async (
       (persistedToolkit.id as Toolkits) === toolkit,
   )?.parameters;
 
-  if (!params) {
+  if (!params && toolkit !== Toolkits.Image && toolkit !== Toolkits.Video) {
     return new Response(
       "Misconfiguration: Toolkit not found in server preferences",
       { status: 400 },
@@ -47,7 +47,7 @@ export const POST = async (
     await req.json(),
   );
 
-  const serverTools = await serverToolkit.tools(params);
+  const serverTools = await serverToolkit.tools(params ? params : {});
   const serverTool = serverTools[typedTool];
 
   console.log(serverTool);
